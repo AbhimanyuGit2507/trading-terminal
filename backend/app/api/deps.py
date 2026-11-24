@@ -27,3 +27,4 @@ def get_margin_provider() -> StressMarginProvider:
 
 def get_execution_provider() -> VirtualSimulatorBroker:
     return VirtualSimulatorBroker(market_provider=get_market_provider())
+

@@ -19,9 +19,11 @@ def main() -> None:
     components = schema.setdefault("components", {}).setdefault("schemas", {})
     for model in (WsSubscribeMessage, WsTickFrameSchema):
         if model.__name__ not in components:
-            components[model.__name__] = model.model_json_schema(
+            model_schema = model.model_json_schema(
                 ref_template="#/components/schemas/{model}"
             )
+            model_schema.pop("$defs", None)
+            components[model.__name__] = model_schema
     out_path.write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
     print(f"Exported OpenAPI schema to {out_path}")
 

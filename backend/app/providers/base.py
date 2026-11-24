@@ -63,3 +63,4 @@ class MarginProvider(Protocol):
         spot: float,
         as_of: datetime,
     ) -> MarginBreakdown: ...
+

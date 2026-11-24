@@ -21,3 +21,4 @@ class StressMarginProvider:
         as_of: datetime,
     ) -> MarginBreakdown:
         return estimate_portfolio_margin(legs=legs, spot=spot, as_of=as_of, r=self._r)
+

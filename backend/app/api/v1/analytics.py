@@ -84,3 +84,4 @@ async def evaluate_strategy_payoff(
         sd_2_low=result.sd_2_low,
         sd_2_high=result.sd_2_high,
     )
+

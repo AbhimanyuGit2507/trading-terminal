@@ -1,7 +1,7 @@
-.PHONY: help up down migrate backend-test frontend-test typegen parity-check lint
+.PHONY: help up down migrate dev-backend dev-frontend backend-test frontend-test typegen parity-check lint
 
 help:
-	@echo "Targets: up, down, migrate, backend-test, frontend-test, typegen, parity-check, lint"
+	@echo "Targets: up, down, migrate, dev-backend, dev-frontend, backend-test, frontend-test, typegen, parity-check, lint"
 
 up:
 	docker compose up -d postgres
@@ -11,6 +11,12 @@ down:
 
 migrate:
 	cd backend && uv run alembic upgrade head
+
+dev-backend:
+	cd backend && MOCK_LIVE_JITTER=true uv run uvicorn app.main:app --reload --port 8000
+
+dev-frontend:
+	cd frontend && pnpm dev
 
 backend-test:
 	cd backend && uv run pytest -v

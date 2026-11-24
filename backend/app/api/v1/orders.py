@@ -56,3 +56,4 @@ async def list_orders(
     stmt = stmt.offset(offset).limit(limit)
     rows = (await session.execute(stmt)).scalars().all()
     return [OrderAuditLogSchema.model_validate(row, from_attributes=True) for row in rows]
+

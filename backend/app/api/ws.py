@@ -81,3 +81,4 @@ async def websocket_stream(
         sender_task.cancel()
         with suppress(asyncio.CancelledError):
             await sender_task
+
