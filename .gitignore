@@ -21,7 +21,7 @@ dist/
 .env.*.local
 
 # Data & Local Artifacts
-data/parquet/*.parquet
+data/parquet/**/*.parquet
 *.duckdb
 *.sqlite3
 *.db

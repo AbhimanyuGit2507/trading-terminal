@@ -38,7 +38,12 @@ def _compute_realized_delta(
     fill_price: Decimal,
     entry_price: Decimal | None,
 ) -> Decimal:
-    if entry_price is None or action not in ("PARTIAL_EXIT", "SQUARE_OFF_ALL", "FLIP_SIDE"):
+    if entry_price is None or action not in (
+        "PARTIAL_EXIT",
+        "SQUARE_OFF_ALL",
+        "FLIP_SIDE",
+        "SETTLED_AT_EXPIRY",
+    ):
         return Decimal("0.00")
     # Order side is the closing order side:
     # BUY closes an existing SELL leg -> PnL = (entry - fill) * qty
@@ -102,7 +107,10 @@ class VirtualSimulatorBroker:
             else:
                 raise ValueError(f"Unable to resolve market quote for contract {instr.contract_id}")
 
-            snapped_px = Decimal(f"{round_to_tick(raw_px, spec.tick_size):.2f}")
+            if req.action == "SETTLED_AT_EXPIRY" and raw_px <= 0.0:
+                snapped_px = Decimal("0.00")
+            else:
+                snapped_px = Decimal(f"{round_to_tick(raw_px, spec.tick_size):.2f}")
             total_realized_delta += _compute_realized_delta(
                 req.action, instr.side, total_qty, snapped_px, instr.entry_price
             )

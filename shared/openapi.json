@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "StockMock Indian F&O Terminal API",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "paths": {
     "/health": {
@@ -655,6 +655,96 @@
         }
       }
     },
+    "/api/v1/simulator/available-dates": {
+      "get": {
+        "tags": [
+          "simulator"
+        ],
+        "summary": "Get Available Dates",
+        "operationId": "get_available_dates_api_v1_simulator_available_dates_get",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "NIFTY",
+                "BANKNIFTY",
+                "FINNIFTY",
+                "SENSEX"
+              ],
+              "type": "string",
+              "default": "NIFTY",
+              "title": "Symbol"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableDatesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulator/jump": {
+      "post": {
+        "tags": [
+          "simulator"
+        ],
+        "summary": "Jump Simulator",
+        "operationId": "jump_simulator_api_v1_simulator_jump_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulatorJumpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulatorStepResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/simulator/step": {
       "post": {
         "tags": [
@@ -699,6 +789,76 @@
   },
   "components": {
     "schemas": {
+      "AvailableDatesResponse": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "dates": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Dates"
+          },
+          "expiry_dates": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Expiry Dates"
+          },
+          "min_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Date"
+          },
+          "max_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Date"
+          },
+          "data_source": {
+            "type": "string",
+            "enum": [
+              "parquet",
+              "mock_fallback"
+            ],
+            "title": "Data Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "dates",
+          "expiry_dates",
+          "data_source"
+        ],
+        "title": "AvailableDatesResponse"
+      },
       "BatchOrderRequest": {
         "properties": {
           "idempotency_key": {
@@ -755,7 +915,8 @@
               "ADD_LOTS",
               "PARTIAL_EXIT",
               "FLIP_SIDE",
-              "SQUARE_OFF_ALL"
+              "SQUARE_OFF_ALL",
+              "SETTLED_AT_EXPIRY"
             ],
             "title": "Action",
             "default": "OPEN_LEGS"
@@ -919,7 +1080,8 @@
               "ADD_LOTS",
               "PARTIAL_EXIT",
               "FLIP_SIDE",
-              "SQUARE_OFF_ALL"
+              "SQUARE_OFF_ALL",
+              "SETTLED_AT_EXPIRY"
             ],
             "title": "Action"
           },
@@ -1986,6 +2148,165 @@
         ],
         "title": "QuoteBatchResponse"
       },
+      "SettledLegEventSchema": {
+        "properties": {
+          "leg_id": {
+            "type": "string",
+            "title": "Leg Id"
+          },
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiry"
+          },
+          "strike": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strike"
+          },
+          "option_type": {
+            "type": "string",
+            "enum": [
+              "CE",
+              "PE",
+              "FUT"
+            ],
+            "title": "Option Type"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "SELL"
+            ],
+            "title": "Side"
+          },
+          "lots_settled": {
+            "type": "integer",
+            "title": "Lots Settled"
+          },
+          "lot_size": {
+            "type": "integer",
+            "title": "Lot Size"
+          },
+          "entry_price": {
+            "type": "number",
+            "title": "Entry Price"
+          },
+          "settlement_price": {
+            "type": "number",
+            "title": "Settlement Price"
+          },
+          "realized_pnl": {
+            "type": "number",
+            "title": "Realized Pnl"
+          },
+          "settled_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Settled At"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "leg_id",
+          "contract_id",
+          "symbol",
+          "expiry",
+          "option_type",
+          "side",
+          "lots_settled",
+          "lot_size",
+          "entry_price",
+          "settlement_price",
+          "realized_pnl",
+          "settled_at"
+        ],
+        "title": "SettledLegEventSchema"
+      },
+      "SimulatorJumpRequest": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol",
+            "default": "NIFTY"
+          },
+          "target_dt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Dt"
+          },
+          "chain_expiry": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain Expiry"
+          },
+          "active_contracts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Active Contracts"
+          },
+          "open_legs": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyLegSchema"
+            },
+            "type": "array",
+            "title": "Open Legs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_dt"
+        ],
+        "title": "SimulatorJumpRequest"
+      },
       "SimulatorStepRequest": {
         "properties": {
           "symbol": {
@@ -2038,6 +2359,13 @@
             },
             "type": "array",
             "title": "Active Contracts"
+          },
+          "open_legs": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyLegSchema"
+            },
+            "type": "array",
+            "title": "Open Legs"
           }
         },
         "type": "object",
@@ -2069,6 +2397,20 @@
             "format": "date-time",
             "title": "New As Of"
           },
+          "data_source": {
+            "type": "string",
+            "enum": [
+              "parquet",
+              "mock_fallback"
+            ],
+            "title": "Data Source",
+            "default": "parquet"
+          },
+          "end_of_data": {
+            "type": "boolean",
+            "title": "End Of Data",
+            "default": false
+          },
           "chain": {
             "$ref": "#/components/schemas/OptionChainSnapshotSchema"
           },
@@ -2078,6 +2420,18 @@
             },
             "type": "object",
             "title": "Leg Quotes"
+          },
+          "settled_legs": {
+            "items": {
+              "$ref": "#/components/schemas/SettledLegEventSchema"
+            },
+            "type": "array",
+            "title": "Settled Legs"
+          },
+          "realized_pnl_delta": {
+            "type": "string",
+            "title": "Realized Pnl Delta",
+            "default": "0.00"
           }
         },
         "type": "object",

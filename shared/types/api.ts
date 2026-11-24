@@ -177,6 +177,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/simulator/available-dates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Available Dates */
+        get: operations["get_available_dates_api_v1_simulator_available_dates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulator/jump": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Jump Simulator */
+        post: operations["jump_simulator_api_v1_simulator_jump_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/simulator/step": {
         parameters: {
             query?: never;
@@ -198,6 +232,27 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AvailableDatesResponse */
+        AvailableDatesResponse: {
+            /**
+             * Symbol
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /** Dates */
+            dates: string[];
+            /** Expiry Dates */
+            expiry_dates: string[];
+            /** Min Date */
+            min_date?: string | null;
+            /** Max Date */
+            max_date?: string | null;
+            /**
+             * Data Source
+             * @enum {string}
+             */
+            data_source: "parquet" | "mock_fallback";
+        };
         /** BatchOrderRequest */
         BatchOrderRequest: {
             /** Idempotency Key */
@@ -217,7 +272,7 @@ export interface components {
              * @default OPEN_LEGS
              * @enum {string}
              */
-            action: "OPEN_LEGS" | "ADD_LOTS" | "PARTIAL_EXIT" | "FLIP_SIDE" | "SQUARE_OFF_ALL";
+            action: "OPEN_LEGS" | "ADD_LOTS" | "PARTIAL_EXIT" | "FLIP_SIDE" | "SQUARE_OFF_ALL" | "SETTLED_AT_EXPIRY";
             /**
              * Slice If Frozen
              * @default true
@@ -293,7 +348,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "OPEN_LEGS" | "ADD_LOTS" | "PARTIAL_EXIT" | "FLIP_SIDE" | "SQUARE_OFF_ALL";
+            action: "OPEN_LEGS" | "ADD_LOTS" | "PARTIAL_EXIT" | "FLIP_SIDE" | "SQUARE_OFF_ALL" | "SETTLED_AT_EXPIRY";
             /**
              * Realized Pnl Delta
              * @default 0.00
@@ -726,6 +781,72 @@ export interface components {
                 [key: string]: components["schemas"]["LegQuoteSchema"];
             };
         };
+        /** SettledLegEventSchema */
+        SettledLegEventSchema: {
+            /** Leg Id */
+            leg_id: string;
+            /** Contract Id */
+            contract_id: string;
+            /**
+             * Symbol
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /**
+             * Expiry
+             * Format: date
+             */
+            expiry: string;
+            /** Strike */
+            strike?: number | null;
+            /**
+             * Option Type
+             * @enum {string}
+             */
+            option_type: "CE" | "PE" | "FUT";
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "BUY" | "SELL";
+            /** Lots Settled */
+            lots_settled: number;
+            /** Lot Size */
+            lot_size: number;
+            /** Entry Price */
+            entry_price: number;
+            /** Settlement Price */
+            settlement_price: number;
+            /** Realized Pnl */
+            realized_pnl: number;
+            /**
+             * Settled At
+             * Format: date-time
+             */
+            settled_at: string;
+            /** Order Id */
+            order_id?: string | null;
+        };
+        /** SimulatorJumpRequest */
+        SimulatorJumpRequest: {
+            /**
+             * Symbol
+             * @default NIFTY
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /**
+             * Target Dt
+             * Format: date-time
+             */
+            target_dt: string;
+            /** Chain Expiry */
+            chain_expiry?: string | null;
+            /** Active Contracts */
+            active_contracts?: string[];
+            /** Open Legs */
+            open_legs?: components["schemas"]["StrategyLegSchema"][];
+        };
         /** SimulatorStepRequest */
         SimulatorStepRequest: {
             /**
@@ -748,6 +869,8 @@ export interface components {
             chain_expiry?: string | null;
             /** Active Contracts */
             active_contracts?: string[];
+            /** Open Legs */
+            open_legs?: components["schemas"]["StrategyLegSchema"][];
         };
         /** SimulatorStepResponse */
         SimulatorStepResponse: {
@@ -766,11 +889,29 @@ export interface components {
              * Format: date-time
              */
             new_as_of: string;
+            /**
+             * Data Source
+             * @default parquet
+             * @enum {string}
+             */
+            data_source: "parquet" | "mock_fallback";
+            /**
+             * End Of Data
+             * @default false
+             */
+            end_of_data: boolean;
             chain: components["schemas"]["OptionChainSnapshotSchema"];
             /** Leg Quotes */
             leg_quotes: {
                 [key: string]: components["schemas"]["LegQuoteSchema"];
             };
+            /** Settled Legs */
+            settled_legs?: components["schemas"]["SettledLegEventSchema"][];
+            /**
+             * Realized Pnl Delta
+             * @default 0.00
+             */
+            realized_pnl_delta: string;
         };
         /** StrategyCreateRequest */
         StrategyCreateRequest: {
@@ -1425,6 +1566,70 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_available_dates_api_v1_simulator_available_dates_get: {
+        parameters: {
+            query?: {
+                symbol?: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailableDatesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    jump_simulator_api_v1_simulator_jump_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulatorJumpRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulatorStepResponse"];
+                };
             };
             /** @description Validation Error */
             422: {

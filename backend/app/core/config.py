@@ -1,9 +1,12 @@
 """Application settings and safety configuration."""
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ROOT_DIR = Path(__file__).resolve().parents[3]
 
 
 class Settings(BaseSettings):
@@ -16,7 +19,7 @@ class Settings(BaseSettings):
     )
 
     app_name: str = "StockMock Indian F&O Terminal API"
-    app_version: str = "0.1.0"
+    app_version: str = "0.2.0"
     api_v1_prefix: str = "/api/v1"
 
     database_url: str = (
@@ -34,6 +37,11 @@ class Settings(BaseSettings):
     # Mock market streaming defaults
     mock_live_jitter: bool = False
     ws_tick_interval_ms: int = 250
+
+    # Phase 2 Historical Parquet + DhanHQ v2 ingestion
+    parquet_data_dir: str = str(_ROOT_DIR / "data" / "parquet")
+    dhan_client_id: str = ""
+    dhan_access_token: str = ""
 
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 

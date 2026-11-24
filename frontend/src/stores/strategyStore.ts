@@ -6,6 +6,7 @@ import type {
   IndexSymbol,
   MarginBreakdown,
   OptionSide,
+  SettledLegEvent,
   StrategyLeg,
   StrategyResponse,
 } from "@/lib/api/types";
@@ -15,6 +16,34 @@ export interface WhatIfState {
   targetSpot: number;
   targetDatetimeIso: string;
   ivShiftPct: number;
+}
+
+export interface ModeWorkspaceSnapshot {
+  strategyId: string | null;
+  strategyName: string;
+  legs: StrategyLeg[];
+  closedLegs: ClosedLegRecord[];
+  realizedPnl: number;
+  lotMultiplier: number;
+  margin: MarginBreakdown | null;
+  whatIf: WhatIfState;
+}
+
+function createEmptyWorkspace(): ModeWorkspaceSnapshot {
+  return {
+    strategyId: null,
+    strategyName: "Untitled Strategy",
+    legs: [],
+    closedLegs: [],
+    realizedPnl: 0,
+    lotMultiplier: 1,
+    margin: null,
+    whatIf: {
+      targetSpot: 24350,
+      targetDatetimeIso: new Date().toISOString(),
+      ivShiftPct: 0,
+    },
+  };
 }
 
 export interface StrategyState {
@@ -29,6 +58,7 @@ export interface StrategyState {
   isExecuting: boolean;
   lastExecutionNotice: string | null;
   whatIf: WhatIfState;
+  workspacesByMode: Record<"builder" | "simulator", ModeWorkspaceSnapshot>;
 
   setStrategyName: (name: string) => void;
   setLotMultiplier: (factor: number) => void;
@@ -36,6 +66,7 @@ export interface StrategyState {
   setIsLoadingMargin: (loading: boolean) => void;
   setWhatIf: (patch: Partial<WhatIfState>) => void;
   resetWhatIf: (spot?: number, dtIso?: string) => void;
+  switchWorkspaceMode: (fromMode: "builder" | "simulator", toMode: "builder" | "simulator") => void;
 
   addLeg: (leg: StrategyLeg) => void;
   replaceWithLegs: (legs: StrategyLeg[], strategyName?: string) => void;
@@ -45,6 +76,7 @@ export interface StrategyState {
   removeLeg: (legId: string) => void;
   partialExitLeg: (legId: string, lotsToExit: number, exitPriceOverride?: number) => Promise<void>;
   squareOffAll: () => Promise<void>;
+  applySettledLegs: (events: SettledLegEvent[], realizedDelta: number) => void;
   clearStrategy: () => void;
   loadSavedStrategy: (saved: StrategyResponse) => void;
   setLastExecutionNotice: (msg: string | null) => void;
@@ -77,6 +109,10 @@ export const useStrategyStore = create<StrategyState>()(
       targetDatetimeIso: new Date().toISOString(),
       ivShiftPct: 0,
     },
+    workspacesByMode: {
+      builder: createEmptyWorkspace(),
+      simulator: createEmptyWorkspace(),
+    },
 
     setStrategyName: (strategyName) => set({ strategyName }),
     setLotMultiplier: (factor) => {
@@ -86,6 +122,37 @@ export const useStrategyStore = create<StrategyState>()(
     setMargin: (margin) => set({ margin }),
     setIsLoadingMargin: (isLoadingMargin) => set({ isLoadingMargin }),
     setLastExecutionNotice: (lastExecutionNotice) => set({ lastExecutionNotice }),
+
+    switchWorkspaceMode: (fromMode, toMode) => {
+      if (fromMode === toMode) return;
+      const cur = get();
+      const savedFrom: ModeWorkspaceSnapshot = {
+        strategyId: cur.strategyId,
+        strategyName: cur.strategyName,
+        legs: cur.legs,
+        closedLegs: cur.closedLegs,
+        realizedPnl: cur.realizedPnl,
+        lotMultiplier: cur.lotMultiplier,
+        margin: cur.margin,
+        whatIf: cur.whatIf,
+      };
+      const target = cur.workspacesByMode[toMode];
+      set({
+        strategyId: target.strategyId,
+        strategyName: target.strategyName,
+        legs: target.legs,
+        closedLegs: target.closedLegs,
+        realizedPnl: target.realizedPnl,
+        lotMultiplier: target.lotMultiplier,
+        margin: target.margin,
+        whatIf: target.whatIf,
+        lastExecutionNotice: null,
+        workspacesByMode: {
+          ...cur.workspacesByMode,
+          [fromMode]: savedFrom,
+        },
+      });
+    },
 
     setWhatIf: (patch) =>
       set((state) => ({
@@ -359,6 +426,33 @@ export const useStrategyStore = create<StrategyState>()(
         margin: null,
         lastExecutionNotice: null,
       }),
+
+    applySettledLegs: (events, realizedDelta) => {
+      if (events.length === 0) return;
+      const settledIds = new Set(events.map((e) => e.leg_id));
+      const newClosed: ClosedLegRecord[] = events.map((ev) => ({
+        leg_id: ev.leg_id,
+        contract_id: ev.contract_id,
+        symbol: ev.symbol,
+        expiry: ev.expiry,
+        strike: ev.strike ?? null,
+        option_type: ev.option_type,
+        side: ev.side,
+        lots_closed: ev.lots_settled,
+        lot_size: ev.lot_size,
+        entry_price: ev.entry_price,
+        exit_price: ev.settlement_price,
+        realized_pnl: ev.realized_pnl,
+        closed_at: ev.settled_at,
+      }));
+      set((cur) => ({
+        legs: cur.legs.filter((l) => !settledIds.has(l.leg_id)),
+        closedLegs: [...newClosed, ...cur.closedLegs],
+        realizedPnl: round2(cur.realizedPnl + realizedDelta),
+        lotMultiplier: cur.legs.every((l) => settledIds.has(l.leg_id)) ? 1 : cur.lotMultiplier,
+        lastExecutionNotice: `Auto-settled ${events.length} expired leg(s) at 15:30 IST · Realized ${realizedDelta >= 0 ? "+" : ""}₹${realizedDelta.toFixed(2)}`,
+      }));
+    },
 
     loadSavedStrategy: (saved) => {
       const metaMult = Number(

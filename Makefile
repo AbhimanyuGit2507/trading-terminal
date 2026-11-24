@@ -1,7 +1,7 @@
-.PHONY: help up down migrate dev-backend dev-frontend backend-test frontend-test typegen parity-check lint
+.PHONY: help up down migrate dev-backend dev-frontend seed-history ingest-dhan backend-test frontend-test typegen parity-check lint
 
 help:
-	@echo "Targets: up, down, migrate, dev-backend, dev-frontend, backend-test, frontend-test, typegen, parity-check, lint"
+	@echo "Targets: up, down, migrate, dev-backend, dev-frontend, seed-history, ingest-dhan, backend-test, frontend-test, typegen, parity-check, lint"
 
 up:
 	docker compose up -d postgres
@@ -17,6 +17,12 @@ dev-backend:
 
 dev-frontend:
 	cd frontend && pnpm dev
+
+seed-history:
+	cd backend && uv run python scripts/seed_synthetic_history.py
+
+ingest-dhan:
+	cd backend && uv run python scripts/ingest_dhan_rolling.py --symbol $(SYMBOL) --from $(FROM) --to $(TO)
 
 backend-test:
 	cd backend && uv run pytest -v

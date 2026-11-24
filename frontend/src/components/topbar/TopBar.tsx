@@ -23,6 +23,8 @@ export function TopBar() {
   const mode = useSimulatorStore((s) => s.mode);
   const setMode = useSimulatorStore((s) => s.setMode);
   const simDatetimeIso = useSimulatorStore((s) => s.simDatetimeIso);
+  const loadAvailableDates = useSimulatorStore((s) => s.loadAvailableDates);
+  const jumpToDateTime = useSimulatorStore((s) => s.jumpToDateTime);
 
   const resetWhatIf = useStrategyStore((s) => s.resetWhatIf);
   const setActiveDrawer = useUiStore((s) => s.setActiveDrawer);
@@ -31,13 +33,27 @@ export function TopBar() {
 
   const handleSymbolChange = async (nextSym: IndexSymbol) => {
     if (nextSym === symbol) return;
-    const asOf = mode === "simulator" && simDatetimeIso ? simDatetimeIso : undefined;
-    const snap = await loadChain(nextSym, undefined, asOf);
+    if (mode === "simulator") {
+      useMarketStore.setState({ symbol: nextSym });
+      const dates = await loadAvailableDates(nextSym);
+      const targetIso =
+        dates.length > 0
+          ? `${dates[dates.length - 1]}T09:20:00+05:30`
+          : simDatetimeIso || new Date().toISOString();
+      await jumpToDateTime(targetIso);
+      return;
+    }
+    const snap = await loadChain(nextSym, undefined, undefined);
     resetWhatIf(snap.spot, snap.as_of);
   };
 
   const handleExpiryChange = async (nextExpiry: string) => {
     const asOf = mode === "simulator" && simDatetimeIso ? simDatetimeIso : undefined;
+    if (mode === "simulator" && asOf) {
+      useMarketStore.setState({ selectedChainExpiry: nextExpiry });
+      await jumpToDateTime(asOf);
+      return;
+    }
     await loadChain(symbol, nextExpiry, asOf);
   };
 

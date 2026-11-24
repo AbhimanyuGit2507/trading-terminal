@@ -1,4 +1,5 @@
 import type {
+  AvailableDatesResponse,
   BatchOrderRequest,
   ExecutionResult,
   ExpiryInfo,
@@ -9,6 +10,7 @@ import type {
   OrderAuditLog,
   PayoffEvaluateRequest,
   PayoffEvaluateResponse,
+  SimulatorJumpRequest,
   SimulatorStepRequest,
   SimulatorStepResponse,
   StrategyCreateRequest,
@@ -136,6 +138,19 @@ export function updateStrategy(
 export function deleteStrategy(id: string): Promise<void> {
   return apiFetch<void>(`/api/v1/strategies/${id}`, {
     method: "DELETE",
+  });
+}
+
+export function getAvailableSimulatorDates(symbol: IndexSymbol): Promise<AvailableDatesResponse> {
+  return apiFetch<AvailableDatesResponse>(
+    `/api/v1/simulator/available-dates?symbol=${encodeURIComponent(symbol)}`
+  );
+}
+
+export function jumpSimulator(req: SimulatorJumpRequest): Promise<SimulatorStepResponse> {
+  return apiFetch<SimulatorStepResponse>("/api/v1/simulator/jump", {
+    method: "POST",
+    body: JSON.stringify(req),
   });
 }
 

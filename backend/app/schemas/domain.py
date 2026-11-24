@@ -15,7 +15,12 @@ OptionSide = Literal["BUY", "SELL"]
 LegOptionType = Literal["CE", "PE", "FUT"]
 TradingMode = Literal["SIMULATOR", "PAPER", "SANDBOX", "LIVE"]
 OrderLifecycleAction = Literal[
-    "OPEN_LEGS", "ADD_LOTS", "PARTIAL_EXIT", "FLIP_SIDE", "SQUARE_OFF_ALL"
+    "OPEN_LEGS",
+    "ADD_LOTS",
+    "PARTIAL_EXIT",
+    "FLIP_SIDE",
+    "SQUARE_OFF_ALL",
+    "SETTLED_AT_EXPIRY",
 ]
 SimulatorStepSize = Literal["-1d", "-30m", "-15m", "-5m", "-1m", "+1m", "+5m", "+15m", "+30m", "+1d"]
 
@@ -307,20 +312,59 @@ class StrategyResponse(BaseModel):
     updated_at: datetime
 
 
+class SettledLegEventSchema(BaseModel):
+    leg_id: str
+    contract_id: str
+    symbol: IndexSymbol
+    expiry: date
+    strike: float | None = None
+    option_type: LegOptionType
+    side: OptionSide
+    lots_settled: int
+    lot_size: int
+    entry_price: float
+    settlement_price: float
+    realized_pnl: float
+    settled_at: datetime
+    order_id: UUID | None = None
+
+
+class AvailableDatesResponse(BaseModel):
+    symbol: IndexSymbol
+    dates: list[date]
+    expiry_dates: list[date]
+    min_date: date | None = None
+    max_date: date | None = None
+    data_source: Literal["parquet", "mock_fallback"]
+
+
+class SimulatorJumpRequest(BaseModel):
+    symbol: IndexSymbol = "NIFTY"
+    target_dt: datetime
+    chain_expiry: date | None = None
+    active_contracts: list[str] = Field(default_factory=list)
+    open_legs: list[StrategyLegSchema] = Field(default_factory=list)
+
+
 class SimulatorStepRequest(BaseModel):
     symbol: IndexSymbol = "NIFTY"
     current_as_of: datetime
     step: SimulatorStepSize
     chain_expiry: date | None = None
     active_contracts: list[str] = Field(default_factory=list)
+    open_legs: list[StrategyLegSchema] = Field(default_factory=list)
 
 
 class SimulatorStepResponse(BaseModel):
     symbol: IndexSymbol
     previous_as_of: datetime
     new_as_of: datetime
+    data_source: Literal["parquet", "mock_fallback"] = "parquet"
+    end_of_data: bool = False
     chain: OptionChainSnapshotSchema
     leg_quotes: dict[str, LegQuoteSchema]
+    settled_legs: list[SettledLegEventSchema] = Field(default_factory=list)
+    realized_pnl_delta: Decimal = Decimal("0.00")
 
 
 class WsSubscribeMessage(BaseModel):
