@@ -18,6 +18,7 @@ import {
   saveDhanToken,
 } from "@/lib/api/client";
 import { useMarketStore } from "@/stores/marketStore";
+import { useRiskStore } from "@/stores/riskStore";
 import { useUiStore } from "@/stores/uiStore";
 
 type ModalTab = "paste" | "renew";
@@ -32,6 +33,8 @@ export function DhanConnectModal() {
   const dhanStatus = useMarketStore((s) => s.dhanStatus);
   const setDhanStatus = useMarketStore((s) => s.setDhanStatus);
   const loadChain = useMarketStore((s) => s.loadChain);
+  const egressIp = useRiskStore((s) => s.egressIp);
+  const loadEgressIp = useRiskStore((s) => s.loadEgressIp);
 
   const isOpen = activeDrawer === "dhan";
 
@@ -55,13 +58,14 @@ export function DhanConnectModal() {
       void getDhanStatus()
         .then((st) => setDhanStatus(st))
         .catch(() => undefined);
+      void loadEgressIp();
       if (!dialog.open) {
         dialog.showModal();
       }
     } else if (dialog.open) {
       dialog.close();
     }
-  }, [isOpen, setDhanStatus]);
+  }, [isOpen, setDhanStatus, loadEgressIp]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -287,6 +291,25 @@ export function DhanConnectModal() {
           >
             <Unplug className="h-3 w-3" />
             <span>Switch to Mock</span>
+          </button>
+        </div>
+
+        {/* SEBI Static-IP Verification Strip */}
+        <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] dark:border-slate-800 dark:bg-slate-900/70">
+          <div>
+            <span className="font-semibold text-slate-600 dark:text-slate-400">
+              Backend Egress Static IP:{" "}
+            </span>
+            <span className="font-mono font-bold text-slate-900 dark:text-white">
+              {egressIp?.public_ip ?? "Checking…"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => void loadEgressIp()}
+            className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400"
+          >
+            Verify IP
           </button>
         </div>
 

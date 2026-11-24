@@ -1,0 +1,97 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stockmock_prod_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-stockmock}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-stockmock}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stockmock} -d ${POSTGRES_DB:-stockmock}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - trading_net
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/backend.Dockerfile
+    container_name: stockmock_prod_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-stockmock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-stockmock}
+      TRADING_MODE: PAPER_LIVE
+      KILL_SWITCH_ENGAGED: "false"
+      MARKET_DATA_SOURCE: auto
+      PARQUET_DATA_DIR: /data/parquet
+      SCRIP_MASTER_CACHE_PATH: /data/cache/dhan_scrip_master.csv
+      MAX_LOTS_PER_ORDER: ${MAX_LOTS_PER_ORDER:-50}
+      MAX_OPEN_LOTS: ${MAX_OPEN_LOTS:-100}
+      MAX_DAILY_TRADES: ${MAX_DAILY_TRADES:-50}
+      DAILY_MAX_LOSS_INR: ${DAILY_MAX_LOSS_INR:-25000.0}
+      CORS_ORIGINS: '["https://${TERMINAL_DOMAIN:-localhost}"]'
+    volumes:
+      - ../data:/data
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - trading_net
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/frontend.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://${TERMINAL_DOMAIN:-localhost}
+        NEXT_PUBLIC_WS_URL: wss://${TERMINAL_DOMAIN:-localhost}/api/v1/ws/stream
+    container_name: stockmock_prod_ui
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    expose:
+      - "3000"
+    networks:
+      - trading_net
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: stockmock_prod_proxy
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    environment:
+      TERMINAL_DOMAIN: ${TERMINAL_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - trading_net
+
+networks:
+  trading_net:
+    driver: bridge
+
+volumes:
+  pg_data:
+  caddy_data:
+  caddy_config:
+

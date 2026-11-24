@@ -42,6 +42,9 @@ export interface UiState {
   defaultLots: number;
   activeDrawer: ActiveDrawer;
   partialExitLegId: string | null;
+  liveOrderTicketOpen: boolean;
+  liveModeConfirmOpen: boolean;
+  killUnlockModalOpen: boolean;
 
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
@@ -56,6 +59,9 @@ export interface UiState {
   setDefaultLots: (lots: number) => void;
   setActiveDrawer: (drawer: ActiveDrawer) => void;
   openPartialExitModal: (legId: string | null) => void;
+  setLiveOrderTicketOpen: (open: boolean) => void;
+  setLiveModeConfirmOpen: (open: boolean) => void;
+  setKillUnlockModalOpen: (open: boolean) => void;
 }
 
 export const useUiStore = create<UiState>((set, get) => ({
@@ -74,6 +80,9 @@ export const useUiStore = create<UiState>((set, get) => ({
   defaultLots: 1,
   activeDrawer: null,
   partialExitLegId: null,
+  liveOrderTicketOpen: false,
+  liveModeConfirmOpen: false,
+  killUnlockModalOpen: false,
 
   setTheme: (theme) => {
     applyThemeToDocument(theme);
@@ -117,4 +126,7 @@ export const useUiStore = create<UiState>((set, get) => ({
   setDefaultLots: (lots) => set({ defaultLots: Math.max(1, Math.floor(lots)) }),
   setActiveDrawer: (activeDrawer) => set({ activeDrawer }),
   openPartialExitModal: (partialExitLegId) => set({ partialExitLegId }),
+  setLiveOrderTicketOpen: (liveOrderTicketOpen) => set({ liveOrderTicketOpen }),
+  setLiveModeConfirmOpen: (liveModeConfirmOpen) => set({ liveModeConfirmOpen }),
+  setKillUnlockModalOpen: (killUnlockModalOpen) => set({ killUnlockModalOpen }),
 }));

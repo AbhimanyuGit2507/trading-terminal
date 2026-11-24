@@ -412,6 +412,21 @@
             }
           },
           {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "virtual",
+                "live"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Source"
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -930,6 +945,439 @@
           }
         }
       }
+    },
+    "/api/v1/broker/dhan/funds": {
+      "get": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Get Dhan Funds",
+        "operationId": "get_dhan_funds_api_v1_broker_dhan_funds_get",
+        "parameters": [
+          {
+            "name": "env",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "SANDBOX",
+                    "LIVE"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Env"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FundLimitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/dhan/orders": {
+      "get": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Get Dhan Orderbook",
+        "operationId": "get_dhan_orderbook_api_v1_broker_dhan_orders_get",
+        "parameters": [
+          {
+            "name": "env",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "SANDBOX",
+                    "LIVE"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Env"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BrokerOrderRecordSchema"
+                  },
+                  "title": "Response Get Dhan Orderbook Api V1 Broker Dhan Orders Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/dhan/positions": {
+      "get": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Get Dhan Positions",
+        "operationId": "get_dhan_positions_api_v1_broker_dhan_positions_get",
+        "parameters": [
+          {
+            "name": "env",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "SANDBOX",
+                    "LIVE"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Env"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BrokerPositionRecordSchema"
+                  },
+                  "title": "Response Get Dhan Positions Api V1 Broker Dhan Positions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/dhan/reconcile": {
+      "post": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Reconcile Dhan Orders",
+        "operationId": "reconcile_dhan_orders_api_v1_broker_dhan_reconcile_post",
+        "parameters": [
+          {
+            "name": "env",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "SANDBOX",
+                    "LIVE"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Env"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrokerReconcileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/status": {
+      "get": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Get Risk Status",
+        "operationId": "get_risk_status_api_v1_risk_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskStateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/config": {
+      "put": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Update Risk Config",
+        "operationId": "update_risk_config_api_v1_risk_config_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiskConfigUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskStateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/mode": {
+      "post": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Switch Execution Mode",
+        "operationId": "switch_execution_mode_api_v1_risk_mode_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutionModeSwitchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskStateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/kill-switch": {
+      "post": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Trigger Kill Switch",
+        "operationId": "trigger_kill_switch_api_v1_risk_kill_switch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/KillSwitchTriggerRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KillSwitchTriggerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/unlock": {
+      "post": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Unlock Kill Switch",
+        "operationId": "unlock_kill_switch_api_v1_risk_unlock_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KillSwitchUnlockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskStateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/egress-ip": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Get Egress Ip",
+        "operationId": "get_egress_ip_api_v1_system_egress_ip_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EgressIpResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1049,7 +1497,9 @@
               "PAPER",
               "PAPER_LIVE",
               "SANDBOX",
-              "LIVE"
+              "DHAN_SANDBOX",
+              "LIVE",
+              "DHAN_LIVE"
             ],
             "title": "Trading Mode",
             "default": "SIMULATOR"
@@ -1066,6 +1516,49 @@
             ],
             "title": "Action",
             "default": "OPEN_LEGS"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "MARGIN",
+                  "INTRADAY"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "order_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Type"
+          },
+          "limit_buffer_ticks": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 50.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Buffer Ticks"
           },
           "slice_if_frozen": {
             "type": "boolean",
@@ -1098,6 +1591,226 @@
           "legs"
         ],
         "title": "BatchOrderRequest"
+      },
+      "BrokerOrderRecordSchema": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "correlation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id"
+          },
+          "order_status": {
+            "type": "string",
+            "title": "Order Status"
+          },
+          "transaction_type": {
+            "type": "string",
+            "title": "Transaction Type"
+          },
+          "exchange_segment": {
+            "type": "string",
+            "title": "Exchange Segment"
+          },
+          "security_id": {
+            "type": "string",
+            "title": "Security Id"
+          },
+          "trading_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trading Symbol"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "order_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Type"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "default": 0
+          },
+          "filled_qty": {
+            "type": "integer",
+            "title": "Filled Qty",
+            "default": 0
+          },
+          "price": {
+            "type": "number",
+            "title": "Price",
+            "default": 0.0
+          },
+          "average_traded_price": {
+            "type": "number",
+            "title": "Average Traded Price",
+            "default": 0.0
+          },
+          "is_super_order": {
+            "type": "boolean",
+            "title": "Is Super Order",
+            "default": false
+          },
+          "oms_error_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oms Error Description"
+          },
+          "create_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Create Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "order_status",
+          "transaction_type",
+          "exchange_segment",
+          "security_id"
+        ],
+        "title": "BrokerOrderRecordSchema"
+      },
+      "BrokerPositionRecordSchema": {
+        "properties": {
+          "trading_symbol": {
+            "type": "string",
+            "title": "Trading Symbol"
+          },
+          "exchange_segment": {
+            "type": "string",
+            "title": "Exchange Segment"
+          },
+          "security_id": {
+            "type": "string",
+            "title": "Security Id"
+          },
+          "product_type": {
+            "type": "string",
+            "title": "Product Type"
+          },
+          "net_qty": {
+            "type": "integer",
+            "title": "Net Qty"
+          },
+          "buy_avg": {
+            "type": "number",
+            "title": "Buy Avg",
+            "default": 0.0
+          },
+          "sell_avg": {
+            "type": "number",
+            "title": "Sell Avg",
+            "default": 0.0
+          },
+          "realized_profit": {
+            "type": "number",
+            "title": "Realized Profit",
+            "default": 0.0
+          },
+          "unrealized_profit": {
+            "type": "number",
+            "title": "Unrealized Profit",
+            "default": 0.0
+          },
+          "multiplier": {
+            "type": "integer",
+            "title": "Multiplier",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "trading_symbol",
+          "exchange_segment",
+          "security_id",
+          "product_type",
+          "net_qty"
+        ],
+        "title": "BrokerPositionRecordSchema"
+      },
+      "BrokerReconcileResponse": {
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": [
+              "SANDBOX",
+              "LIVE"
+            ],
+            "title": "Environment"
+          },
+          "updated_orders": {
+            "type": "integer",
+            "title": "Updated Orders"
+          },
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/BrokerOrderRecordSchema"
+            },
+            "type": "array",
+            "title": "Orders"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/BrokerPositionRecordSchema"
+            },
+            "type": "array",
+            "title": "Positions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "environment",
+          "updated_orders",
+          "orders",
+          "positions"
+        ],
+        "title": "BrokerReconcileResponse"
       },
       "ClosedLegRecordSchema": {
         "properties": {
@@ -1338,6 +2051,71 @@
         ],
         "title": "DhanTotpGenerateRequest"
       },
+      "EgressIpResponse": {
+        "properties": {
+          "public_ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Ip"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "default": "api.ipify.org"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Checked At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "checked_at"
+        ],
+        "title": "EgressIpResponse"
+      },
+      "ExecutionModeSwitchRequest": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATOR",
+              "PAPER_LIVE",
+              "DHAN_SANDBOX",
+              "DHAN_LIVE"
+            ],
+            "title": "Mode"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "title": "ExecutionModeSwitchRequest"
+      },
       "ExecutionResultSchema": {
         "properties": {
           "idempotency_key": {
@@ -1357,7 +2135,9 @@
               "PAPER",
               "PAPER_LIVE",
               "SANDBOX",
-              "LIVE"
+              "DHAN_SANDBOX",
+              "LIVE",
+              "DHAN_LIVE"
             ],
             "title": "Trading Mode"
           },
@@ -1433,6 +2213,43 @@
           "lot_size"
         ],
         "title": "ExpiryInfoSchema"
+      },
+      "FundLimitResponse": {
+        "properties": {
+          "available_balance": {
+            "type": "number",
+            "title": "Available Balance"
+          },
+          "utilized_amount": {
+            "type": "number",
+            "title": "Utilized Amount",
+            "default": 0.0
+          },
+          "collateral_amount": {
+            "type": "number",
+            "title": "Collateral Amount",
+            "default": 0.0
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "SANDBOX",
+              "LIVE"
+            ],
+            "title": "Environment",
+            "default": "SANDBOX"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "dhan_api"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available_balance"
+        ],
+        "title": "FundLimitResponse"
       },
       "HTTPValidationError": {
         "properties": {
@@ -1510,6 +2327,79 @@
           "effective_from"
         ],
         "title": "InstrumentSpecSchema"
+      },
+      "KillSwitchTriggerRequest": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 256,
+            "title": "Reason",
+            "default": "Manual Emergency Exit triggered by user"
+          }
+        },
+        "type": "object",
+        "title": "KillSwitchTriggerRequest"
+      },
+      "KillSwitchTriggerResponse": {
+        "properties": {
+          "kill_switch_active": {
+            "type": "boolean",
+            "title": "Kill Switch Active"
+          },
+          "cancelled_orders": {
+            "type": "integer",
+            "title": "Cancelled Orders"
+          },
+          "exited_positions": {
+            "type": "integer",
+            "title": "Exited Positions"
+          },
+          "fallback_exits": {
+            "type": "integer",
+            "title": "Fallback Exits"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "triggered_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Triggered At"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kill_switch_active",
+          "cancelled_orders",
+          "exited_positions",
+          "fallback_exits",
+          "triggered_at",
+          "reason"
+        ],
+        "title": "KillSwitchTriggerResponse"
+      },
+      "KillSwitchUnlockRequest": {
+        "properties": {
+          "confirmation_text": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 4,
+            "title": "Confirmation Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confirmation_text"
+        ],
+        "title": "KillSwitchUnlockRequest"
       },
       "LegQuoteSchema": {
         "properties": {
@@ -1988,6 +2878,33 @@
             "type": "string",
             "title": "Status"
           },
+          "broker_order_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Broker Order Id"
+          },
+          "is_super_order": {
+            "type": "boolean",
+            "title": "Is Super Order",
+            "default": false
+          },
+          "oms_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oms Error"
+          },
           "executed_at": {
             "type": "string",
             "format": "date-time",
@@ -2081,11 +2998,40 @@
             "type": "string",
             "enum": [
               "PENDING",
+              "TRANSIT",
+              "TRADED",
               "FILLED",
               "REJECTED",
               "CANCELLED"
             ],
             "title": "Status"
+          },
+          "broker_order_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Broker Order Id"
+          },
+          "is_super_order": {
+            "type": "boolean",
+            "title": "Is Super Order",
+            "default": false
+          },
+          "oms_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oms Error"
           },
           "executed_at": {
             "type": "string",
@@ -2178,6 +3124,81 @@
               }
             ],
             "title": "Entry Price"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "MARGIN",
+                  "INTRADAY"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "order_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Type"
+          },
+          "target_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Price"
+          },
+          "stop_loss_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Loss Price"
+          },
+          "trailing_jump": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trailing Jump"
           }
         },
         "type": "object",
@@ -2446,6 +3467,180 @@
           "quotes"
         ],
         "title": "QuoteBatchResponse"
+      },
+      "RiskConfigUpdateRequest": {
+        "properties": {
+          "daily_max_loss_inr": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Daily Max Loss Inr"
+          },
+          "max_lots_per_order": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Lots Per Order"
+          },
+          "max_open_lots": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Open Lots"
+          },
+          "max_daily_trades": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Daily Trades"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "MARGIN",
+                  "INTRADAY"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "limit_buffer_ticks": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 50.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Buffer Ticks"
+          }
+        },
+        "type": "object",
+        "title": "RiskConfigUpdateRequest"
+      },
+      "RiskStateResponse": {
+        "properties": {
+          "active_execution_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATOR",
+              "PAPER_LIVE",
+              "DHAN_SANDBOX",
+              "DHAN_LIVE"
+            ],
+            "title": "Active Execution Mode",
+            "default": "PAPER_LIVE"
+          },
+          "daily_kill_switch_active": {
+            "type": "boolean",
+            "title": "Daily Kill Switch Active",
+            "default": false
+          },
+          "kill_switch_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kill Switch Reason"
+          },
+          "kill_switch_engaged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kill Switch Engaged At"
+          },
+          "daily_max_loss_inr": {
+            "type": "number",
+            "title": "Daily Max Loss Inr",
+            "default": 25000.0
+          },
+          "max_lots_per_order": {
+            "type": "integer",
+            "title": "Max Lots Per Order",
+            "default": 50
+          },
+          "max_open_lots": {
+            "type": "integer",
+            "title": "Max Open Lots",
+            "default": 100
+          },
+          "max_daily_trades": {
+            "type": "integer",
+            "title": "Max Daily Trades",
+            "default": 50
+          },
+          "product_type": {
+            "type": "string",
+            "enum": [
+              "MARGIN",
+              "INTRADAY"
+            ],
+            "title": "Product Type",
+            "default": "MARGIN"
+          },
+          "limit_buffer_ticks": {
+            "type": "integer",
+            "title": "Limit Buffer Ticks",
+            "default": 2
+          },
+          "trades_today": {
+            "type": "integer",
+            "title": "Trades Today",
+            "default": 0
+          },
+          "net_mtm_inr": {
+            "type": "number",
+            "title": "Net Mtm Inr",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "title": "RiskStateResponse"
       },
       "SettledLegEventSchema": {
         "properties": {
@@ -2928,6 +4123,57 @@
             ],
             "title": "Status",
             "default": "OPEN"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "MARGIN",
+                  "INTRADAY"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "target_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Price"
+          },
+          "stop_loss_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Loss Price"
+          },
+          "trailing_jump": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trailing Jump"
           }
         },
         "type": "object",

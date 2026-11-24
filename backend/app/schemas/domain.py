@@ -13,7 +13,12 @@ IndexSymbol = Literal["NIFTY", "BANKNIFTY", "FINNIFTY", "SENSEX"]
 ExchangeSegment = Literal["NSE_FNO", "BSE_FNO"]
 OptionSide = Literal["BUY", "SELL"]
 LegOptionType = Literal["CE", "PE", "FUT"]
-TradingMode = Literal["SIMULATOR", "PAPER", "PAPER_LIVE", "SANDBOX", "LIVE"]
+TradingMode = Literal[
+    "SIMULATOR", "PAPER", "PAPER_LIVE", "SANDBOX", "DHAN_SANDBOX", "LIVE", "DHAN_LIVE"
+]
+ExecutionMode = Literal["SIMULATOR", "PAPER_LIVE", "DHAN_SANDBOX", "DHAN_LIVE"]
+ProductType = Literal["MARGIN", "INTRADAY"]
+BrokerOrderType = Literal["LIMIT", "MARKET"]
 FeedStatus = Literal["LIVE_DHAN", "MOCK_FALLBACK", "TOKEN_EXPIRED", "DISCONNECTED"]
 OrderLifecycleAction = Literal[
     "OPEN_LEGS",
@@ -136,6 +141,10 @@ class StrategyLegSchema(BaseModel):
     forward_at_base: float | None = None
     enabled: bool = True
     status: Literal["OPEN", "CLOSED"] = "OPEN"
+    product_type: ProductType | None = None
+    target_price: float | None = Field(default=None, ge=0.0)
+    stop_loss_price: float | None = Field(default=None, ge=0.0)
+    trailing_jump: float | None = Field(default=None, ge=0.0)
 
 
 class ClosedLegRecordSchema(BaseModel):
@@ -220,6 +229,11 @@ class OrderLegInstruction(BaseModel):
     lot_size: int | None = Field(default=None, ge=1)
     limit_price: Decimal | None = None
     entry_price: Decimal | None = None  # used to compute realized_pnl_delta on exits
+    product_type: ProductType | None = None
+    order_type: BrokerOrderType | None = None
+    target_price: Decimal | None = Field(default=None, ge=Decimal(0))
+    stop_loss_price: Decimal | None = Field(default=None, ge=Decimal(0))
+    trailing_jump: Decimal | None = Field(default=None, ge=Decimal(0))
 
 
 class BatchOrderRequest(BaseModel):
@@ -228,6 +242,9 @@ class BatchOrderRequest(BaseModel):
     parent_order_id: UUID | None = None
     trading_mode: TradingMode = "SIMULATOR"
     action: OrderLifecycleAction = "OPEN_LEGS"
+    product_type: ProductType | None = None
+    order_type: BrokerOrderType | None = None
+    limit_buffer_ticks: int | None = Field(default=None, ge=0, le=50)
     slice_if_frozen: bool = True
     as_of: datetime | None = None
     legs: list[OrderLegInstruction] = Field(min_length=1)
@@ -245,7 +262,10 @@ class OrderFillSchema(BaseModel):
     lots: int
     quantity: int
     fill_price: Decimal
-    status: Literal["PENDING", "FILLED", "REJECTED", "CANCELLED"]
+    status: Literal["PENDING", "TRANSIT", "TRADED", "FILLED", "REJECTED", "CANCELLED"]
+    broker_order_id: str | None = None
+    is_super_order: bool = False
+    oms_error: str | None = None
     executed_at: datetime
 
 
@@ -274,6 +294,9 @@ class OrderAuditLogSchema(BaseModel):
     limit_price: Decimal | None = None
     fill_price: Decimal | None = None
     status: str
+    broker_order_id: str | None = None
+    is_super_order: bool = False
+    oms_error: str | None = None
     executed_at: datetime
     created_at: datetime
 
@@ -412,3 +435,104 @@ class DhanStatusResponse(BaseModel):
     expires_at: datetime | None = None
     seconds_remaining: int | None = None
     message: str | None = None
+
+
+class RiskStateResponse(BaseModel):
+    active_execution_mode: ExecutionMode = "PAPER_LIVE"
+    daily_kill_switch_active: bool = False
+    kill_switch_reason: str | None = None
+    kill_switch_engaged_at: datetime | None = None
+    daily_max_loss_inr: float = 25000.0
+    max_lots_per_order: int = 50
+    max_open_lots: int = 100
+    max_daily_trades: int = 50
+    product_type: ProductType = "MARGIN"
+    limit_buffer_ticks: int = 2
+    trades_today: int = 0
+    net_mtm_inr: float = 0.0
+
+
+class RiskConfigUpdateRequest(BaseModel):
+    daily_max_loss_inr: float | None = Field(default=None, gt=0.0)
+    max_lots_per_order: int | None = Field(default=None, ge=1, le=1000)
+    max_open_lots: int | None = Field(default=None, ge=1, le=5000)
+    max_daily_trades: int | None = Field(default=None, ge=1, le=1000)
+    product_type: ProductType | None = None
+    limit_buffer_ticks: int | None = Field(default=None, ge=0, le=50)
+
+
+class ExecutionModeSwitchRequest(BaseModel):
+    mode: ExecutionMode
+    confirmed: bool = False
+
+
+class KillSwitchTriggerRequest(BaseModel):
+    reason: str = Field(default="Manual Emergency Exit triggered by user", max_length=256)
+
+
+class KillSwitchUnlockRequest(BaseModel):
+    confirmation_text: str = Field(min_length=4, max_length=64)
+
+
+class KillSwitchTriggerResponse(BaseModel):
+    kill_switch_active: bool
+    cancelled_orders: int
+    exited_positions: int
+    fallback_exits: int
+    errors: list[str] = Field(default_factory=list)
+    triggered_at: datetime
+    reason: str
+
+
+class FundLimitResponse(BaseModel):
+    available_balance: float
+    utilized_amount: float = 0.0
+    collateral_amount: float = 0.0
+    environment: Literal["SANDBOX", "LIVE"] = "SANDBOX"
+    source: str = "dhan_api"
+
+
+class BrokerOrderRecordSchema(BaseModel):
+    order_id: str
+    correlation_id: str | None = None
+    order_status: str
+    transaction_type: str
+    exchange_segment: str
+    security_id: str
+    trading_symbol: str | None = None
+    product_type: str | None = None
+    order_type: str | None = None
+    quantity: int = 0
+    filled_qty: int = 0
+    price: float = 0.0
+    average_traded_price: float = 0.0
+    is_super_order: bool = False
+    oms_error_description: str | None = None
+    create_time: str | None = None
+
+
+class BrokerPositionRecordSchema(BaseModel):
+    trading_symbol: str
+    exchange_segment: str
+    security_id: str
+    product_type: str
+    net_qty: int
+    buy_avg: float = 0.0
+    sell_avg: float = 0.0
+    realized_profit: float = 0.0
+    unrealized_profit: float = 0.0
+    multiplier: int = 1
+
+
+class BrokerReconcileResponse(BaseModel):
+    environment: Literal["SANDBOX", "LIVE"]
+    updated_orders: int
+    orders: list[BrokerOrderRecordSchema]
+    positions: list[BrokerPositionRecordSchema]
+
+
+class EgressIpResponse(BaseModel):
+    public_ip: str | None = None
+    provider: str = "api.ipify.org"
+    checked_at: datetime
+    error: str | None = None

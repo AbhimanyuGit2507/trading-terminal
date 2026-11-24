@@ -11,6 +11,7 @@ import type {
   StrategyResponse,
 } from "@/lib/api/types";
 import { useMarketStore } from "./marketStore";
+import { useRiskStore } from "./riskStore";
 
 export interface WhatIfState {
   targetSpot: number;
@@ -79,6 +80,12 @@ export interface StrategyState {
   toggleLegEnabled: (legId: string) => void;
   flipLegSide: (legId: string) => void;
   updateLegLots: (legId: string, lots: number) => void;
+  updateLegRisk: (
+    legId: string,
+    patch: Partial<
+      Pick<StrategyLeg, "target_price" | "stop_loss_price" | "trailing_jump" | "product_type">
+    >
+  ) => void;
   removeLeg: (legId: string) => void;
   partialExitLeg: (legId: string, lotsToExit: number, exitPriceOverride?: number) => Promise<void>;
   squareOffAll: () => Promise<void>;
@@ -272,6 +279,12 @@ export const useStrategyStore = create<StrategyState>()(
       }));
     },
 
+    updateLegRisk: (legId, patch) => {
+      set((state) => ({
+        legs: state.legs.map((l) => (l.leg_id === legId ? { ...l, ...patch } : l)),
+      }));
+    },
+
     removeLeg: (legId) =>
       set((state) => ({
         legs: state.legs.filter((l) => l.leg_id !== legId),
@@ -286,10 +299,16 @@ export const useStrategyStore = create<StrategyState>()(
       const effectiveOpenLots = leg.lots * mult;
       const clampedExitLots = Math.min(effectiveOpenLots, Math.floor(lotsToExit));
       const market = useMarketStore.getState();
+      const risk = useRiskStore.getState();
       const liveQuote = market.activeLegQuotes[leg.contract_id];
       const closingSide: OptionSide = leg.side === "BUY" ? "SELL" : "BUY";
 
-      const tradingMode = market.feedStatus === "LIVE_DHAN" ? "PAPER_LIVE" : "SIMULATOR";
+      const tradingMode =
+        risk.executionMode === "DHAN_LIVE" || risk.executionMode === "DHAN_SANDBOX"
+          ? risk.executionMode
+          : market.feedStatus === "LIVE_DHAN"
+            ? "PAPER_LIVE"
+            : "SIMULATOR";
 
       set({ isExecuting: true });
       try {
@@ -382,7 +401,13 @@ export const useStrategyStore = create<StrategyState>()(
       if (openLegs.length === 0) return;
 
       const market = useMarketStore.getState();
-      const tradingMode = market.feedStatus === "LIVE_DHAN" ? "PAPER_LIVE" : "SIMULATOR";
+      const risk = useRiskStore.getState();
+      const tradingMode =
+        risk.executionMode === "DHAN_LIVE" || risk.executionMode === "DHAN_SANDBOX"
+          ? risk.executionMode
+          : market.feedStatus === "LIVE_DHAN"
+            ? "PAPER_LIVE"
+            : "SIMULATOR";
       set({ isExecuting: true });
       try {
         const res = await executeOrders({

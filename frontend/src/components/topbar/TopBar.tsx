@@ -1,9 +1,10 @@
 "use client";
 
-import { Activity, BookMarked, History, Moon, Radio, Sun } from "lucide-react";
-import type { IndexSymbol } from "@/lib/api/types";
+import { Activity, BookMarked, History, LockOpen, Moon, OctagonAlert, Radio, Sun } from "lucide-react";
+import type { ExecutionMode, IndexSymbol } from "@/lib/api/types";
 import { formatDhanPill } from "@/lib/dhanStatus";
 import { useMarketStore } from "@/stores/marketStore";
+import { useRiskStore } from "@/stores/riskStore";
 import { useSimulatorStore } from "@/stores/simulatorStore";
 import { useStrategyStore } from "@/stores/strategyStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -30,9 +31,51 @@ export function TopBar() {
   const jumpToDateTime = useSimulatorStore((s) => s.jumpToDateTime);
 
   const resetWhatIf = useStrategyStore((s) => s.resetWhatIf);
+  const setLastExecutionNotice = useStrategyStore((s) => s.setLastExecutionNotice);
   const setActiveDrawer = useUiStore((s) => s.setActiveDrawer);
+  const setLiveModeConfirmOpen = useUiStore((s) => s.setLiveModeConfirmOpen);
+  const setKillUnlockModalOpen = useUiStore((s) => s.setKillUnlockModalOpen);
   const theme = useUiStore((s) => s.theme);
   const toggleTheme = useUiStore((s) => s.toggleTheme);
+
+  const executionMode = useRiskStore((s) => s.executionMode);
+  const riskState = useRiskStore((s) => s.riskState);
+  const isKillArmed = useRiskStore((s) => s.isKillArmed);
+  const isTriggeringKill = useRiskStore((s) => s.isTriggeringKill);
+  const requestModeSwitch = useRiskStore((s) => s.requestModeSwitch);
+  const setExecutionModeLocal = useRiskStore((s) => s.setExecutionModeLocal);
+  const armOrTriggerKillSwitch = useRiskStore((s) => s.armOrTriggerKillSwitch);
+
+  const displayedMode: ExecutionMode =
+    mode === "simulator" ? "SIMULATOR" : executionMode;
+
+  const handleModeClick = async (next: ExecutionMode) => {
+    if (next === "DHAN_LIVE") {
+      setLiveModeConfirmOpen(true);
+      return;
+    }
+    const res = await requestModeSwitch(next, false);
+    if (!res.ok) {
+      if (next === "SIMULATOR" || next === "PAPER_LIVE") {
+        setExecutionModeLocal(next);
+        await setMode(next === "SIMULATOR" ? "simulator" : "builder");
+      } else {
+        setLastExecutionNotice(res.error ?? "Connect DhanHQ token before switching to Sandbox");
+        setActiveDrawer("dhan");
+      }
+    }
+  };
+
+  const handleKillSwitchClick = async () => {
+    const res = await armOrTriggerKillSwitch("Manual KILL SWITCH clicked from TopBar");
+    if (res.triggered) {
+      setLastExecutionNotice(
+        `KILL SWITCH EXECUTED: Cancelled ${res.triggered.cancelled_orders} order(s), exited ${res.triggered.exited_positions} position batch(es), ${res.triggered.fallback_exits} fallback market exit(s).`
+      );
+    } else if (res.error) {
+      setLastExecutionNotice(`Kill switch error: ${res.error}`);
+    }
+  };
 
   const handleSymbolChange = async (nextSym: IndexSymbol) => {
     if (nextSym === symbol) return;
@@ -159,36 +202,72 @@ export function TopBar() {
           </div>
         </div>
 
-        {/* Mode Toggle + Drawers + Theme Toggle + Stream Indicator */}
-        <div className="flex items-center gap-2">
+        {/* 4-Mode Switcher + Kill Switch + Drawers + Theme Toggle + Stream Indicator */}
+        <div className="flex flex-wrap items-center gap-2">
           <div
             className="flex items-center rounded-lg border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-800 dark:bg-slate-900"
             role="group"
             aria-label="Trading Workspace Mode"
           >
-            <button
-              type="button"
-              onClick={() => setMode("builder")}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                mode === "builder"
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
-            >
-              Builder
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("simulator")}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                mode === "simulator"
-                  ? "bg-violet-600 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
-            >
-              Simulator
-            </button>
+            {(
+              [
+                { key: "SIMULATOR", label: "Simulator", activeCls: "bg-slate-700 text-white shadow-sm" },
+                { key: "PAPER_LIVE", label: "Paper Live", activeCls: "bg-blue-600 text-white shadow-sm" },
+                { key: "DHAN_SANDBOX", label: "Dhan Sandbox", activeCls: "bg-amber-600 text-white shadow-sm" },
+                { key: "DHAN_LIVE", label: "Dhan Live", activeCls: "bg-rose-600 text-white shadow-sm" },
+              ] as const
+            ).map((opt) => {
+              const active = displayedMode === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => void handleModeClick(opt.key)}
+                  className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+                    active
+                      ? opt.activeCls
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
+
+          {(displayedMode === "DHAN_SANDBOX" ||
+            displayedMode === "DHAN_LIVE" ||
+            riskState?.daily_kill_switch_active) &&
+            (riskState?.daily_kill_switch_active ? (
+              <button
+                type="button"
+                onClick={() => setKillUnlockModalOpen(true)}
+                className="inline-flex animate-pulse items-center gap-1.5 rounded-md border border-rose-500 bg-rose-700 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm hover:bg-rose-600"
+              >
+                <LockOpen className="h-3.5 w-3.5" />
+                <span>KILL SWITCH ACTIVE — UNLOCK</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={isTriggeringKill}
+                onClick={() => void handleKillSwitchClick()}
+                className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-bold shadow-sm transition-colors ${
+                  isKillArmed
+                    ? "animate-pulse border-rose-700 bg-rose-600 text-white"
+                    : "border-rose-400 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white dark:border-rose-500/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-600 dark:hover:text-white"
+                }`}
+              >
+                <OctagonAlert className="h-3.5 w-3.5" />
+                <span>
+                  {isTriggeringKill
+                    ? "EXITING ALL…"
+                    : isKillArmed
+                      ? "Click again to Square Off Everything"
+                      : "KILL SWITCH (EXIT ALL)"}
+                </span>
+              </button>
+            ))}
 
           <button
             type="button"

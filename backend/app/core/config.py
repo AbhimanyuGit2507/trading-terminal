@@ -26,9 +26,16 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://stockmock:stockmock_dev@localhost:5434/stockmock"
     )
 
-    # Safety guards (Phase 4 readiness)
-    trading_mode: Literal["SIMULATOR", "PAPER", "SANDBOX", "LIVE"] = "SIMULATOR"
+    # Safety guards (Phase 4: never auto-boot into DHAN_LIVE)
+    trading_mode: Literal[
+        "SIMULATOR", "PAPER", "PAPER_LIVE", "SANDBOX", "DHAN_SANDBOX", "LIVE", "DHAN_LIVE"
+    ] = "PAPER_LIVE"
     kill_switch_engaged: bool = False
+    max_lots_per_order: int = 50
+    max_open_lots: int = 100
+    max_daily_trades: int = 50
+    daily_max_loss_inr: float = 25000.0
+    egress_ip_check_url: str = "https://api.ipify.org?format=json"
 
     # Quant defaults locked by Tech Lead
     default_risk_free_rate: float = 0.0

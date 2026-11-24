@@ -1,18 +1,27 @@
 import type {
   AvailableDatesResponse,
   BatchOrderRequest,
+  BrokerOrderRecord,
+  BrokerPositionRecord,
+  BrokerReconcileResponse,
   DhanStatusResponse,
   DhanTokenSaveRequest,
   DhanTotpGenerateRequest,
+  EgressIpResponse,
+  ExecutionModeSwitchRequest,
   ExecutionResult,
   ExpiryInfo,
+  FundLimitResponse,
   IndexSymbol,
   InstrumentSpec,
+  KillSwitchTriggerResponse,
   LegQuote,
   OptionChainSnapshot,
   OrderAuditLog,
   PayoffEvaluateRequest,
   PayoffEvaluateResponse,
+  RiskConfigUpdateRequest,
+  RiskStateResponse,
   SimulatorJumpRequest,
   SimulatorStepRequest,
   SimulatorStepResponse,
@@ -192,5 +201,71 @@ export function disconnectDhan(): Promise<DhanStatusResponse> {
   return apiFetch<DhanStatusResponse>("/api/v1/broker/dhan/disconnect", {
     method: "POST",
   });
+}
+
+export function getRiskStatus(): Promise<RiskStateResponse> {
+  return apiFetch<RiskStateResponse>("/api/v1/risk/status");
+}
+
+export function updateRiskConfig(req: RiskConfigUpdateRequest): Promise<RiskStateResponse> {
+  return apiFetch<RiskStateResponse>("/api/v1/risk/config", {
+    method: "PUT",
+    body: JSON.stringify(req),
+  });
+}
+
+export function switchExecutionMode(
+  req: ExecutionModeSwitchRequest
+): Promise<RiskStateResponse> {
+  return apiFetch<RiskStateResponse>("/api/v1/risk/mode", {
+    method: "POST",
+    body: JSON.stringify(req),
+  });
+}
+
+export function triggerKillSwitch(reason?: string): Promise<KillSwitchTriggerResponse> {
+  return apiFetch<KillSwitchTriggerResponse>("/api/v1/risk/kill-switch", {
+    method: "POST",
+    body: JSON.stringify(reason ? { reason } : {}),
+  });
+}
+
+export function unlockKillSwitch(confirmationText: string): Promise<RiskStateResponse> {
+  return apiFetch<RiskStateResponse>("/api/v1/risk/unlock", {
+    method: "POST",
+    body: JSON.stringify({ confirmation_text: confirmationText }),
+  });
+}
+
+export function getDhanFunds(env?: "SANDBOX" | "LIVE"): Promise<FundLimitResponse> {
+  const qs = env ? `?env=${env}` : "";
+  return apiFetch<FundLimitResponse>(`/api/v1/broker/dhan/funds${qs}`);
+}
+
+export function getDhanBrokerOrders(
+  env?: "SANDBOX" | "LIVE"
+): Promise<BrokerOrderRecord[]> {
+  const qs = env ? `?env=${env}` : "";
+  return apiFetch<BrokerOrderRecord[]>(`/api/v1/broker/dhan/orders${qs}`);
+}
+
+export function getDhanPositions(
+  env?: "SANDBOX" | "LIVE"
+): Promise<BrokerPositionRecord[]> {
+  const qs = env ? `?env=${env}` : "";
+  return apiFetch<BrokerPositionRecord[]>(`/api/v1/broker/dhan/positions${qs}`);
+}
+
+export function reconcileDhanOrders(
+  env?: "SANDBOX" | "LIVE"
+): Promise<BrokerReconcileResponse> {
+  const qs = env ? `?env=${env}` : "";
+  return apiFetch<BrokerReconcileResponse>(`/api/v1/broker/dhan/reconcile${qs}`, {
+    method: "POST",
+  });
+}
+
+export function getEgressIp(): Promise<EgressIpResponse> {
+  return apiFetch<EgressIpResponse>("/api/v1/system/egress-ip");
 }
 

@@ -22,6 +22,7 @@ import type { OptionSide } from "@/lib/api/types";
 import { formatPnl, formatShortExpiry, formatSignedInr } from "@/lib/format";
 import { buildPresetLegs, type PresetKey, STRATEGY_PRESETS } from "@/lib/presets";
 import { useMarketStore } from "@/stores/marketStore";
+import { useRiskStore } from "@/stores/riskStore";
 import { useSimulatorStore } from "@/stores/simulatorStore";
 import { getEffectiveLegs, useStrategyStore } from "@/stores/strategyStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -44,6 +45,7 @@ export function StrategyBuilderPanel() {
   const toggleLegEnabled = useStrategyStore((s) => s.toggleLegEnabled);
   const flipLegSide = useStrategyStore((s) => s.flipLegSide);
   const updateLegLots = useStrategyStore((s) => s.updateLegLots);
+  const updateLegRisk = useStrategyStore((s) => s.updateLegRisk);
   const removeLeg = useStrategyStore((s) => s.removeLeg);
   const squareOffAll = useStrategyStore((s) => s.squareOffAll);
   const clearStrategy = useStrategyStore((s) => s.clearStrategy);
@@ -66,12 +68,15 @@ export function StrategyBuilderPanel() {
   const setAutoSquareOffOnMaxLoss = useStrategyStore((s) => s.setAutoSquareOffOnMaxLoss);
 
   const mode = useSimulatorStore((s) => s.mode);
+  const executionMode = useRiskStore((s) => s.executionMode);
+  const updateRiskLimits = useRiskStore((s) => s.updateRiskLimits);
   const displayQtyMode = useUiStore((s) => s.displayQtyMode);
   const setDisplayQtyMode = useUiStore((s) => s.setDisplayQtyMode);
   const pnlUnit = useUiStore((s) => s.pnlUnit);
   const setPnlUnit = useUiStore((s) => s.setPnlUnit);
   const defaultLots = useUiStore((s) => s.defaultLots);
   const openPartialExitModal = useUiStore((s) => s.openPartialExitModal);
+  const setLiveOrderTicketOpen = useUiStore((s) => s.setLiveOrderTicketOpen);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isApplyingPreset, setIsApplyingPreset] = useState(false);
@@ -135,6 +140,10 @@ export function StrategyBuilderPanel() {
       lotMultiplier
     );
     if (openLegs.length === 0) return;
+    if (mode !== "simulator" && (executionMode === "DHAN_SANDBOX" || executionMode === "DHAN_LIVE")) {
+      setLiveOrderTicketOpen(true);
+      return;
+    }
     try {
       const tradingMode = feedStatus === "LIVE_DHAN" ? "PAPER_LIVE" : "SIMULATOR";
       const res = await executeOrders({
@@ -337,7 +346,11 @@ export function StrategyBuilderPanel() {
               value={dailyMaxLossLimit ?? ""}
               onChange={(e) => {
                 const raw = e.target.value.trim();
-                setDailyMaxLossLimit(raw === "" ? null : Number(raw));
+                const parsed = raw === "" ? null : Number(raw);
+                setDailyMaxLossLimit(parsed);
+                if (parsed !== null && parsed > 0) {
+                  void updateRiskLimits({ daily_max_loss_inr: parsed });
+                }
               }}
               className="w-16 bg-transparent font-mono text-[11px] font-semibold text-slate-900 focus:outline-none dark:text-white"
             />
@@ -356,10 +369,23 @@ export function StrategyBuilderPanel() {
             type="button"
             disabled={legs.length === 0 || isExecuting}
             onClick={() => void handleExecuteVirtualOrder()}
-            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+            className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-40 ${
+              mode !== "simulator" && executionMode === "DHAN_LIVE"
+                ? "bg-rose-600 hover:bg-rose-500"
+                : mode !== "simulator" && executionMode === "DHAN_SANDBOX"
+                  ? "bg-amber-600 hover:bg-amber-500"
+                  : "bg-emerald-600 hover:bg-emerald-500"
+            }`}
           >
             <Send className="h-3 w-3" />
-            <span>{feedStatus === "LIVE_DHAN" ? "Paper Log" : "Log Order"}</span>
+            <span>
+              {mode !== "simulator" &&
+              (executionMode === "DHAN_LIVE" || executionMode === "DHAN_SANDBOX")
+                ? "Execute Strategy"
+                : feedStatus === "LIVE_DHAN"
+                  ? "Paper Log"
+                  : "Log Order"}
+            </span>
           </button>
 
           <button
@@ -437,6 +463,9 @@ export function StrategyBuilderPanel() {
                 </th>
                 <th className="border-b border-slate-200 px-2 py-1.5 text-right dark:border-slate-800">
                   P&amp;L ({pnlUnit === "POINTS" ? "Pts" : "₹"})
+                </th>
+                <th className="border-b border-slate-200 px-2 py-1.5 text-center dark:border-slate-800">
+                  Super SL / Tgt
                 </th>
                 <th className="border-b border-slate-200 px-2 py-1.5 text-right dark:border-slate-800">
                   Actions
@@ -556,6 +585,41 @@ export function StrategyBuilderPanel() {
                       }`}
                     >
                       {formatPnl(legPnl, pnlUnit, lotSize, { signed: true })}
+                    </td>
+
+                    <td className="px-2 py-1.5">
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.5}
+                          placeholder="SL"
+                          aria-label={`Stop loss for ${leg.contract_id}`}
+                          value={leg.stop_loss_price ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value.trim();
+                            updateLegRisk(leg.leg_id, {
+                              stop_loss_price: v === "" ? null : Number(v),
+                            });
+                          }}
+                          className="w-14 rounded border border-slate-200 bg-white px-1 py-0.5 text-center font-mono text-[10px] text-slate-800 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.5}
+                          placeholder="Tgt"
+                          aria-label={`Target price for ${leg.contract_id}`}
+                          value={leg.target_price ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value.trim();
+                            updateLegRisk(leg.leg_id, {
+                              target_price: v === "" ? null : Number(v),
+                            });
+                          }}
+                          className="w-14 rounded border border-slate-200 bg-white px-1 py-0.5 text-center font-mono text-[10px] text-slate-800 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        />
+                      </div>
                     </td>
 
                     <td className="px-2 py-1.5 text-right">

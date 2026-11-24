@@ -4,13 +4,16 @@ import { useEffect, useRef } from "react";
 import { evaluateAnalytics, getDhanStatus, getInstruments } from "@/lib/api/client";
 import { MarketStreamClient } from "@/lib/api/wsClient";
 import { useMarketStore } from "@/stores/marketStore";
+import { useRiskStore } from "@/stores/riskStore";
 import { useSimulatorStore } from "@/stores/simulatorStore";
 import { getEffectiveLegs, useStrategyStore } from "@/stores/strategyStore";
 import { useUiStore } from "@/stores/uiStore";
 import { StrategyBuilderPanel } from "./builder/StrategyBuilderPanel";
 import { DhanConnectModal } from "./modals/DhanConnectModal";
+import { LiveConfirmModal } from "./modals/LiveConfirmModal";
 import { OrdersDrawer } from "./modals/OrdersDrawer";
 import { PartialExitDialog } from "./modals/PartialExitDialog";
+import { SafetyGuardModals } from "./modals/SafetyGuardModals";
 import { StrategiesDrawer } from "./modals/StrategiesDrawer";
 import { OptionChainTable } from "./option-chain/OptionChainTable";
 import { PayoffPanel } from "./payoff/PayoffPanel";
@@ -68,6 +71,9 @@ export function TerminalWorkspace() {
         if (mounted) market.setDhanStatus(st);
       })
       .catch(() => undefined);
+
+    void useRiskStore.getState().loadRiskState();
+    void useRiskStore.getState().loadEgressIp();
 
     market
       .loadChain("NIFTY")
@@ -221,6 +227,8 @@ export function TerminalWorkspace() {
       <StrategiesDrawer />
       <OrdersDrawer />
       <DhanConnectModal />
+      <LiveConfirmModal />
+      <SafetyGuardModals />
     </div>
   );
 }

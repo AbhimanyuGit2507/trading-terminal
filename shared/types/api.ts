@@ -313,6 +313,176 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/broker/dhan/funds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Dhan Funds */
+        get: operations["get_dhan_funds_api_v1_broker_dhan_funds_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/dhan/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Dhan Orderbook */
+        get: operations["get_dhan_orderbook_api_v1_broker_dhan_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/dhan/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Dhan Positions */
+        get: operations["get_dhan_positions_api_v1_broker_dhan_positions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/dhan/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile Dhan Orders */
+        post: operations["reconcile_dhan_orders_api_v1_broker_dhan_reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/risk/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Risk Status */
+        get: operations["get_risk_status_api_v1_risk_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/risk/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Risk Config */
+        put: operations["update_risk_config_api_v1_risk_config_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/risk/mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Switch Execution Mode */
+        post: operations["switch_execution_mode_api_v1_risk_mode_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/risk/kill-switch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Trigger Kill Switch */
+        post: operations["trigger_kill_switch_api_v1_risk_kill_switch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/risk/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unlock Kill Switch */
+        post: operations["unlock_kill_switch_api_v1_risk_unlock_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/system/egress-ip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Egress Ip */
+        get: operations["get_egress_ip_api_v1_system_egress_ip_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -351,13 +521,19 @@ export interface components {
              * @default SIMULATOR
              * @enum {string}
              */
-            trading_mode: "SIMULATOR" | "PAPER" | "PAPER_LIVE" | "SANDBOX" | "LIVE";
+            trading_mode: "SIMULATOR" | "PAPER" | "PAPER_LIVE" | "SANDBOX" | "DHAN_SANDBOX" | "LIVE" | "DHAN_LIVE";
             /**
              * Action
              * @default OPEN_LEGS
              * @enum {string}
              */
             action: "OPEN_LEGS" | "ADD_LOTS" | "PARTIAL_EXIT" | "FLIP_SIDE" | "SQUARE_OFF_ALL" | "SETTLED_AT_EXPIRY";
+            /** Product Type */
+            product_type?: ("MARGIN" | "INTRADAY") | null;
+            /** Order Type */
+            order_type?: ("LIMIT" | "MARKET") | null;
+            /** Limit Buffer Ticks */
+            limit_buffer_ticks?: number | null;
             /**
              * Slice If Frozen
              * @default true
@@ -367,6 +543,108 @@ export interface components {
             as_of?: string | null;
             /** Legs */
             legs: components["schemas"]["OrderLegInstruction"][];
+        };
+        /** BrokerOrderRecordSchema */
+        BrokerOrderRecordSchema: {
+            /** Order Id */
+            order_id: string;
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Order Status */
+            order_status: string;
+            /** Transaction Type */
+            transaction_type: string;
+            /** Exchange Segment */
+            exchange_segment: string;
+            /** Security Id */
+            security_id: string;
+            /** Trading Symbol */
+            trading_symbol?: string | null;
+            /** Product Type */
+            product_type?: string | null;
+            /** Order Type */
+            order_type?: string | null;
+            /**
+             * Quantity
+             * @default 0
+             */
+            quantity: number;
+            /**
+             * Filled Qty
+             * @default 0
+             */
+            filled_qty: number;
+            /**
+             * Price
+             * @default 0
+             */
+            price: number;
+            /**
+             * Average Traded Price
+             * @default 0
+             */
+            average_traded_price: number;
+            /**
+             * Is Super Order
+             * @default false
+             */
+            is_super_order: boolean;
+            /** Oms Error Description */
+            oms_error_description?: string | null;
+            /** Create Time */
+            create_time?: string | null;
+        };
+        /** BrokerPositionRecordSchema */
+        BrokerPositionRecordSchema: {
+            /** Trading Symbol */
+            trading_symbol: string;
+            /** Exchange Segment */
+            exchange_segment: string;
+            /** Security Id */
+            security_id: string;
+            /** Product Type */
+            product_type: string;
+            /** Net Qty */
+            net_qty: number;
+            /**
+             * Buy Avg
+             * @default 0
+             */
+            buy_avg: number;
+            /**
+             * Sell Avg
+             * @default 0
+             */
+            sell_avg: number;
+            /**
+             * Realized Profit
+             * @default 0
+             */
+            realized_profit: number;
+            /**
+             * Unrealized Profit
+             * @default 0
+             */
+            unrealized_profit: number;
+            /**
+             * Multiplier
+             * @default 1
+             */
+            multiplier: number;
+        };
+        /** BrokerReconcileResponse */
+        BrokerReconcileResponse: {
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "SANDBOX" | "LIVE";
+            /** Updated Orders */
+            updated_orders: number;
+            /** Orders */
+            orders: components["schemas"]["BrokerOrderRecordSchema"][];
+            /** Positions */
+            positions: components["schemas"]["BrokerPositionRecordSchema"][];
         };
         /** ClosedLegRecordSchema */
         ClosedLegRecordSchema: {
@@ -450,6 +728,36 @@ export interface components {
             /** Totp */
             totp: string;
         };
+        /** EgressIpResponse */
+        EgressIpResponse: {
+            /** Public Ip */
+            public_ip?: string | null;
+            /**
+             * Provider
+             * @default api.ipify.org
+             */
+            provider: string;
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+            /** Error */
+            error?: string | null;
+        };
+        /** ExecutionModeSwitchRequest */
+        ExecutionModeSwitchRequest: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "SIMULATOR" | "PAPER_LIVE" | "DHAN_SANDBOX" | "DHAN_LIVE";
+            /**
+             * Confirmed
+             * @default false
+             */
+            confirmed: boolean;
+        };
         /** ExecutionResultSchema */
         ExecutionResultSchema: {
             /**
@@ -466,7 +774,7 @@ export interface components {
              * Trading Mode
              * @enum {string}
              */
-            trading_mode: "SIMULATOR" | "PAPER" | "PAPER_LIVE" | "SANDBOX" | "LIVE";
+            trading_mode: "SIMULATOR" | "PAPER" | "PAPER_LIVE" | "SANDBOX" | "DHAN_SANDBOX" | "LIVE" | "DHAN_LIVE";
             /**
              * Action
              * @enum {string}
@@ -497,6 +805,32 @@ export interface components {
             dte: number;
             /** Lot Size */
             lot_size: number;
+        };
+        /** FundLimitResponse */
+        FundLimitResponse: {
+            /** Available Balance */
+            available_balance: number;
+            /**
+             * Utilized Amount
+             * @default 0
+             */
+            utilized_amount: number;
+            /**
+             * Collateral Amount
+             * @default 0
+             */
+            collateral_amount: number;
+            /**
+             * Environment
+             * @default SANDBOX
+             * @enum {string}
+             */
+            environment: "SANDBOX" | "LIVE";
+            /**
+             * Source
+             * @default dhan_api
+             */
+            source: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -532,6 +866,39 @@ export interface components {
              * Format: date
              */
             effective_from: string;
+        };
+        /** KillSwitchTriggerRequest */
+        KillSwitchTriggerRequest: {
+            /**
+             * Reason
+             * @default Manual Emergency Exit triggered by user
+             */
+            reason: string;
+        };
+        /** KillSwitchTriggerResponse */
+        KillSwitchTriggerResponse: {
+            /** Kill Switch Active */
+            kill_switch_active: boolean;
+            /** Cancelled Orders */
+            cancelled_orders: number;
+            /** Exited Positions */
+            exited_positions: number;
+            /** Fallback Exits */
+            fallback_exits: number;
+            /** Errors */
+            errors?: string[];
+            /**
+             * Triggered At
+             * Format: date-time
+             */
+            triggered_at: string;
+            /** Reason */
+            reason: string;
+        };
+        /** KillSwitchUnlockRequest */
+        KillSwitchUnlockRequest: {
+            /** Confirmation Text */
+            confirmation_text: string;
         };
         /**
          * LegQuoteSchema
@@ -739,6 +1106,15 @@ export interface components {
             fill_price?: string | null;
             /** Status */
             status: string;
+            /** Broker Order Id */
+            broker_order_id?: string | null;
+            /**
+             * Is Super Order
+             * @default false
+             */
+            is_super_order: boolean;
+            /** Oms Error */
+            oms_error?: string | null;
             /**
              * Executed At
              * Format: date-time
@@ -787,7 +1163,16 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "PENDING" | "FILLED" | "REJECTED" | "CANCELLED";
+            status: "PENDING" | "TRANSIT" | "TRADED" | "FILLED" | "REJECTED" | "CANCELLED";
+            /** Broker Order Id */
+            broker_order_id?: string | null;
+            /**
+             * Is Super Order
+             * @default false
+             */
+            is_super_order: boolean;
+            /** Oms Error */
+            oms_error?: string | null;
             /**
              * Executed At
              * Format: date-time
@@ -813,6 +1198,16 @@ export interface components {
             limit_price?: number | string | null;
             /** Entry Price */
             entry_price?: number | string | null;
+            /** Product Type */
+            product_type?: ("MARGIN" | "INTRADAY") | null;
+            /** Order Type */
+            order_type?: ("LIMIT" | "MARKET") | null;
+            /** Target Price */
+            target_price?: number | string | null;
+            /** Stop Loss Price */
+            stop_loss_price?: number | string | null;
+            /** Trailing Jump */
+            trailing_jump?: number | string | null;
         };
         /** PayoffEvaluateRequest */
         PayoffEvaluateRequest: {
@@ -909,6 +1304,80 @@ export interface components {
             quotes: {
                 [key: string]: components["schemas"]["LegQuoteSchema"];
             };
+        };
+        /** RiskConfigUpdateRequest */
+        RiskConfigUpdateRequest: {
+            /** Daily Max Loss Inr */
+            daily_max_loss_inr?: number | null;
+            /** Max Lots Per Order */
+            max_lots_per_order?: number | null;
+            /** Max Open Lots */
+            max_open_lots?: number | null;
+            /** Max Daily Trades */
+            max_daily_trades?: number | null;
+            /** Product Type */
+            product_type?: ("MARGIN" | "INTRADAY") | null;
+            /** Limit Buffer Ticks */
+            limit_buffer_ticks?: number | null;
+        };
+        /** RiskStateResponse */
+        RiskStateResponse: {
+            /**
+             * Active Execution Mode
+             * @default PAPER_LIVE
+             * @enum {string}
+             */
+            active_execution_mode: "SIMULATOR" | "PAPER_LIVE" | "DHAN_SANDBOX" | "DHAN_LIVE";
+            /**
+             * Daily Kill Switch Active
+             * @default false
+             */
+            daily_kill_switch_active: boolean;
+            /** Kill Switch Reason */
+            kill_switch_reason?: string | null;
+            /** Kill Switch Engaged At */
+            kill_switch_engaged_at?: string | null;
+            /**
+             * Daily Max Loss Inr
+             * @default 25000
+             */
+            daily_max_loss_inr: number;
+            /**
+             * Max Lots Per Order
+             * @default 50
+             */
+            max_lots_per_order: number;
+            /**
+             * Max Open Lots
+             * @default 100
+             */
+            max_open_lots: number;
+            /**
+             * Max Daily Trades
+             * @default 50
+             */
+            max_daily_trades: number;
+            /**
+             * Product Type
+             * @default MARGIN
+             * @enum {string}
+             */
+            product_type: "MARGIN" | "INTRADAY";
+            /**
+             * Limit Buffer Ticks
+             * @default 2
+             */
+            limit_buffer_ticks: number;
+            /**
+             * Trades Today
+             * @default 0
+             */
+            trades_today: number;
+            /**
+             * Net Mtm Inr
+             * @default 0
+             */
+            net_mtm_inr: number;
         };
         /** SettledLegEventSchema */
         SettledLegEventSchema: {
@@ -1128,6 +1597,14 @@ export interface components {
              * @enum {string}
              */
             status: "OPEN" | "CLOSED";
+            /** Product Type */
+            product_type?: ("MARGIN" | "INTRADAY") | null;
+            /** Target Price */
+            target_price?: number | null;
+            /** Stop Loss Price */
+            stop_loss_price?: number | null;
+            /** Trailing Jump */
+            trailing_jump?: number | null;
         };
         /** StrategyResponse */
         StrategyResponse: {
@@ -1536,6 +2013,7 @@ export interface operations {
         parameters: {
             query?: {
                 strategy_id?: string | null;
+                source?: "all" | "virtual" | "live";
                 limit?: number;
                 offset?: number;
             };
@@ -1932,6 +2410,302 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DhanStatusResponse"];
+                };
+            };
+        };
+    };
+    get_dhan_funds_api_v1_broker_dhan_funds_get: {
+        parameters: {
+            query?: {
+                env?: ("SANDBOX" | "LIVE") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FundLimitResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dhan_orderbook_api_v1_broker_dhan_orders_get: {
+        parameters: {
+            query?: {
+                env?: ("SANDBOX" | "LIVE") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrokerOrderRecordSchema"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dhan_positions_api_v1_broker_dhan_positions_get: {
+        parameters: {
+            query?: {
+                env?: ("SANDBOX" | "LIVE") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrokerPositionRecordSchema"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_dhan_orders_api_v1_broker_dhan_reconcile_post: {
+        parameters: {
+            query?: {
+                env?: ("SANDBOX" | "LIVE") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrokerReconcileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_risk_status_api_v1_risk_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskStateResponse"];
+                };
+            };
+        };
+    };
+    update_risk_config_api_v1_risk_config_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RiskConfigUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskStateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    switch_execution_mode_api_v1_risk_mode_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExecutionModeSwitchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskStateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    trigger_kill_switch_api_v1_risk_kill_switch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["KillSwitchTriggerRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KillSwitchTriggerResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unlock_kill_switch_api_v1_risk_unlock_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KillSwitchUnlockRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskStateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_egress_ip_api_v1_system_egress_ip_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EgressIpResponse"];
                 };
             };
         };

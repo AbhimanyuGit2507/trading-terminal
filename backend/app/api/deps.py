@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 from app.core.config import get_settings
+from app.providers.dhan_broker import CompositeExecutionProvider, DhanExecutionProvider
 from app.providers.dhan_margin import DhanMarginProvider
 from app.providers.dhan_ws import DhanLiveMarketProvider
 from app.providers.margin_provider import StressMarginProvider
@@ -13,6 +14,7 @@ from app.providers.parquet_hist import ParquetHistoricalProvider
 from app.providers.virtual_broker import VirtualSimulatorBroker
 from app.services.dhan_auth import DhanTokenManager
 from app.services.dhan_scrip_master import DhanScripMaster
+from app.services.risk_guard import RiskGuardService
 
 
 @lru_cache
@@ -60,5 +62,28 @@ def get_margin_provider() -> DhanMarginProvider:
     )
 
 
-def get_execution_provider() -> VirtualSimulatorBroker:
-    return VirtualSimulatorBroker(market_provider=get_market_provider())
+@lru_cache
+def get_risk_guard() -> RiskGuardService:
+    return RiskGuardService(
+        token_manager=get_token_manager(),
+        market_provider=get_market_provider(),
+        margin_provider=get_margin_provider(),
+    )
+
+
+@lru_cache
+def get_dhan_broker() -> DhanExecutionProvider:
+    return DhanExecutionProvider(
+        token_manager=get_token_manager(),
+        scrip_master=get_scrip_master(),
+        market_provider=get_market_provider(),
+        risk_guard=get_risk_guard(),
+    )
+
+
+def get_execution_provider() -> CompositeExecutionProvider:
+    return CompositeExecutionProvider(
+        virtual_broker=VirtualSimulatorBroker(market_provider=get_market_provider()),
+        dhan_broker=get_dhan_broker(),
+        risk_guard=get_risk_guard(),
+    )

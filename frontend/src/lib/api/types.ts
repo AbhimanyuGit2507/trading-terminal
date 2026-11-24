@@ -7,12 +7,25 @@ export type ExchangeSegment = ApiSchemas["InstrumentSpecSchema"]["exchange"];
 export type OptionSide = ApiSchemas["StrategyLegSchema"]["side"];
 export type LegOptionType = ApiSchemas["StrategyLegSchema"]["option_type"];
 export type TradingMode = NonNullable<ApiSchemas["BatchOrderRequest"]["trading_mode"]>;
+export type ExecutionMode = NonNullable<ApiSchemas["RiskStateResponse"]["active_execution_mode"]>;
+export type ProductType = NonNullable<ApiSchemas["RiskStateResponse"]["product_type"]>;
+export type BrokerOrderType = NonNullable<ApiSchemas["BatchOrderRequest"]["order_type"]>;
 export type SimulatorStepSize = ApiSchemas["SimulatorStepRequest"]["step"];
 export type FeedStatus = NonNullable<ApiSchemas["OptionChainSnapshotSchema"]["feed_status"]>;
 
 export type DhanStatusResponse = ApiSchemas["DhanStatusResponse"];
 export type DhanTokenSaveRequest = ApiSchemas["DhanTokenSaveRequest"];
 export type DhanTotpGenerateRequest = ApiSchemas["DhanTotpGenerateRequest"];
+
+export type RiskStateResponse = ApiSchemas["RiskStateResponse"];
+export type RiskConfigUpdateRequest = ApiSchemas["RiskConfigUpdateRequest"];
+export type ExecutionModeSwitchRequest = ApiSchemas["ExecutionModeSwitchRequest"];
+export type KillSwitchTriggerResponse = ApiSchemas["KillSwitchTriggerResponse"];
+export type FundLimitResponse = ApiSchemas["FundLimitResponse"];
+export type BrokerOrderRecord = ApiSchemas["BrokerOrderRecordSchema"];
+export type BrokerPositionRecord = ApiSchemas["BrokerPositionRecordSchema"];
+export type BrokerReconcileResponse = ApiSchemas["BrokerReconcileResponse"];
+export type EgressIpResponse = ApiSchemas["EgressIpResponse"];
 
 export type InstrumentSpec = ApiSchemas["InstrumentSpecSchema"];
 export type ExpiryInfo = ApiSchemas["ExpiryInfoSchema"];

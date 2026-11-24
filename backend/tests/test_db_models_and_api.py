@@ -73,7 +73,7 @@ def test_fastapi_milestone1_endpoints() -> None:
 
     r_health = client.get("/health")
     assert r_health.status_code == 200
-    assert r_health.json()["trading_mode"] == "SIMULATOR"
+    assert r_health.json()["trading_mode"] == "PAPER_LIVE"
 
     r_inst = client.get("/api/v1/market/instruments")
     assert r_inst.status_code == 200
