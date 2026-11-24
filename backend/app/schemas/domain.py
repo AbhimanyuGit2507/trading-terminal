@@ -13,7 +13,8 @@ IndexSymbol = Literal["NIFTY", "BANKNIFTY", "FINNIFTY", "SENSEX"]
 ExchangeSegment = Literal["NSE_FNO", "BSE_FNO"]
 OptionSide = Literal["BUY", "SELL"]
 LegOptionType = Literal["CE", "PE", "FUT"]
-TradingMode = Literal["SIMULATOR", "PAPER", "SANDBOX", "LIVE"]
+TradingMode = Literal["SIMULATOR", "PAPER", "PAPER_LIVE", "SANDBOX", "LIVE"]
+FeedStatus = Literal["LIVE_DHAN", "MOCK_FALLBACK", "TOKEN_EXPIRED", "DISCONNECTED"]
 OrderLifecycleAction = Literal[
     "OPEN_LEGS",
     "ADD_LOTS",
@@ -114,6 +115,7 @@ class OptionChainSnapshotSchema(BaseModel):
     lot_size: int
     strike_step: int
     futures_contract_id: str
+    feed_status: FeedStatus = "MOCK_FALLBACK"
     expiries: list[ExpiryInfoSchema]
     rows: list[OptionChainRowSchema]
 
@@ -376,6 +378,7 @@ class WsSubscribeMessage(BaseModel):
 
 class WsTickFrameSchema(BaseModel):
     type: Literal["tick", "pong", "error"]
+    feed_status: FeedStatus = "MOCK_FALLBACK"
     symbol: IndexSymbol | None = None
     chain_expiry: date | None = None
     as_of: datetime | None = None
@@ -386,4 +389,26 @@ class WsTickFrameSchema(BaseModel):
     atm_strike: float | None = None
     chain_deltas: list[OptionChainRowSchema] = Field(default_factory=list)
     leg_quotes: dict[str, LegQuoteSchema] = Field(default_factory=dict)
+    message: str | None = None
+
+
+class DhanTokenSaveRequest(BaseModel):
+    client_id: str = Field(min_length=2, max_length=64)
+    access_token: str = Field(min_length=8)
+
+
+class DhanTotpGenerateRequest(BaseModel):
+    client_id: str = Field(min_length=2, max_length=64)
+    pin: str = Field(min_length=4, max_length=12)
+    totp: str = Field(min_length=6, max_length=8)
+
+
+class DhanStatusResponse(BaseModel):
+    connected: bool
+    mode: FeedStatus
+    client_id_masked: str | None = None
+    account_name: str | None = None
+    ucc: str | None = None
+    expires_at: datetime | None = None
+    seconds_remaining: int | None = None
     message: str | None = None

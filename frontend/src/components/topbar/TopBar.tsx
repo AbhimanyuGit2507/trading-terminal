@@ -2,6 +2,7 @@
 
 import { Activity, BookMarked, History, Moon, Radio, Sun } from "lucide-react";
 import type { IndexSymbol } from "@/lib/api/types";
+import { formatDhanPill } from "@/lib/dhanStatus";
 import { useMarketStore } from "@/stores/marketStore";
 import { useSimulatorStore } from "@/stores/simulatorStore";
 import { useStrategyStore } from "@/stores/strategyStore";
@@ -18,6 +19,8 @@ export function TopBar() {
   const indiaVix = useMarketStore((s) => s.indiaVix);
   const lotSize = useMarketStore((s) => s.lotSize);
   const wsStatus = useMarketStore((s) => s.wsStatus);
+  const feedStatus = useMarketStore((s) => s.feedStatus);
+  const dhanStatus = useMarketStore((s) => s.dhanStatus);
   const loadChain = useMarketStore((s) => s.loadChain);
 
   const mode = useSimulatorStore((s) => s.mode);
@@ -219,25 +222,29 @@ export function TopBar() {
             )}
           </button>
 
-          <div
-            title={`WebSocket stream: ${wsStatus}`}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-              wsStatus === "connected"
-                ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
-                : wsStatus === "connecting"
-                  ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
-                  : "border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-            }`}
-          >
-            <Radio className="h-3 w-3" />
-            <span className="hidden md:inline">
-              {wsStatus === "connected"
-                ? "Live Feed"
-                : wsStatus === "connecting"
-                  ? "Syncing"
-                  : "Mock"}
-            </span>
-          </div>
+          {(() => {
+            const pill = formatDhanPill(feedStatus, dhanStatus, wsStatus);
+            const toneClass =
+              pill.tone === "emerald"
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+                : pill.tone === "rose"
+                  ? "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
+                  : pill.tone === "amber"
+                    ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
+                    : "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700";
+
+            return (
+              <button
+                type="button"
+                onClick={() => setActiveDrawer("dhan")}
+                title={pill.title}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors ${toneClass}`}
+              >
+                <Radio className="h-3 w-3 shrink-0" />
+                <span className="hidden md:inline">{pill.label}</span>
+              </button>
+            );
+          })()}
         </div>
       </div>
     </header>

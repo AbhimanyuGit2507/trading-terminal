@@ -38,8 +38,10 @@ class Settings(BaseSettings):
     mock_live_jitter: bool = False
     ws_tick_interval_ms: int = 250
 
-    # Phase 2 Historical Parquet + DhanHQ v2 ingestion
+    # Phase 2/3 Historical Parquet + DhanHQ v2 Live Market Feed
     parquet_data_dir: str = str(_ROOT_DIR / "data" / "parquet")
+    scrip_master_cache_path: str = str(_ROOT_DIR / "data" / "cache" / "dhan_scrip_master.csv")
+    market_data_source: Literal["auto", "dhan", "mock"] = "auto"
     dhan_client_id: str = ""
     dhan_access_token: str = ""
 

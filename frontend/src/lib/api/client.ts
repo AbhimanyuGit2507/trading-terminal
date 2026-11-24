@@ -1,6 +1,9 @@
 import type {
   AvailableDatesResponse,
   BatchOrderRequest,
+  DhanStatusResponse,
+  DhanTokenSaveRequest,
+  DhanTotpGenerateRequest,
   ExecutionResult,
   ExpiryInfo,
   IndexSymbol,
@@ -158,6 +161,36 @@ export function stepSimulator(req: SimulatorStepRequest): Promise<SimulatorStepR
   return apiFetch<SimulatorStepResponse>("/api/v1/simulator/step", {
     method: "POST",
     body: JSON.stringify(req),
+  });
+}
+
+export function getDhanStatus(): Promise<DhanStatusResponse> {
+  return apiFetch<DhanStatusResponse>("/api/v1/broker/dhan/status");
+}
+
+export function saveDhanToken(req: DhanTokenSaveRequest): Promise<DhanStatusResponse> {
+  return apiFetch<DhanStatusResponse>("/api/v1/broker/dhan/token", {
+    method: "POST",
+    body: JSON.stringify(req),
+  });
+}
+
+export function renewDhanToken(): Promise<DhanStatusResponse> {
+  return apiFetch<DhanStatusResponse>("/api/v1/broker/dhan/renew", {
+    method: "POST",
+  });
+}
+
+export function generateDhanTotp(req: DhanTotpGenerateRequest): Promise<DhanStatusResponse> {
+  return apiFetch<DhanStatusResponse>("/api/v1/broker/dhan/generate-totp", {
+    method: "POST",
+    body: JSON.stringify(req),
+  });
+}
+
+export function disconnectDhan(): Promise<DhanStatusResponse> {
+  return apiFetch<DhanStatusResponse>("/api/v1/broker/dhan/disconnect", {
+    method: "POST",
   });
 }
 

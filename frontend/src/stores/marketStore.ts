@@ -3,8 +3,10 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { getBatchQuotes, getOptionChain } from "@/lib/api/client";
 import type { WsConnectionStatus } from "@/lib/api/wsClient";
 import type {
+  DhanStatusResponse,
   ExchangeSegment,
   ExpiryInfo,
+  FeedStatus,
   IndexSymbol,
   InstrumentSpec,
   LegQuote,
@@ -33,12 +35,15 @@ export interface MarketState {
   maxOi: number;
   /** Multi-expiry quote cache so Calendar/Diagonal legs stay live across expiry switches */
   activeLegQuotes: Record<string, LegQuote>;
+  feedStatus: FeedStatus;
+  dhanStatus: DhanStatusResponse | null;
   wsStatus: WsConnectionStatus;
   isLoadingChain: boolean;
   error: string | null;
 
   setInstruments: (specs: InstrumentSpec[]) => void;
   setWsStatus: (status: WsConnectionStatus) => void;
+  setDhanStatus: (status: DhanStatusResponse) => void;
   setSnapshot: (snapshot: OptionChainSnapshot) => void;
   applyTickFrame: (frame: WsTickFrame) => void;
   mergeActiveLegQuotes: (quotes: Record<string, LegQuote>) => void;
@@ -85,12 +90,15 @@ export const useMarketStore = create<MarketState>()(
     rowsByStrike: {},
     maxOi: 1,
     activeLegQuotes: {},
+    feedStatus: "MOCK_FALLBACK",
+    dhanStatus: null,
     wsStatus: "disconnected",
     isLoadingChain: false,
     error: null,
 
     setInstruments: (instruments) => set({ instruments }),
     setWsStatus: (wsStatus) => set({ wsStatus }),
+    setDhanStatus: (dhanStatus) => set({ dhanStatus, feedStatus: dhanStatus.mode }),
 
     setSnapshot: (snapshot) => {
       const { strikes, rowsByStrike, maxOi } = buildRowMap(snapshot.rows);
@@ -152,6 +160,7 @@ export const useMarketStore = create<MarketState>()(
           strikes,
           rowsByStrike,
           maxOi,
+          feedStatus: snapshot.feed_status ?? prev.feedStatus,
           activeLegQuotes: nextQuotes,
           error: null,
         };
@@ -170,6 +179,7 @@ export const useMarketStore = create<MarketState>()(
         forwardPrice: frame.forward_price ?? cur.forwardPrice,
         indiaVix: frame.india_vix ?? cur.indiaVix,
         atmStrike: frame.atm_strike ?? cur.atmStrike,
+        feedStatus: frame.feed_status ?? cur.feedStatus,
       };
 
       if (
@@ -226,6 +236,7 @@ export const useMarketStore = create<MarketState>()(
       const s = get();
       if (!s.selectedChainExpiry || s.strikes.length === 0) return null;
       return {
+        feed_status: s.feedStatus,
         symbol: s.symbol,
         exchange: s.exchange,
         expiry: s.selectedChainExpiry,

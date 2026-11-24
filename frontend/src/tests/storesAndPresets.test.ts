@@ -7,6 +7,7 @@ import { useStrategyStore } from "@/stores/strategyStore";
 function makeMockChain(expiry: string, basePrice = 150): OptionChainSnapshot {
   const strikes = [24150, 24200, 24250, 24300, 24350, 24400, 24450, 24500, 24550, 24600, 24650];
   return {
+    feed_status: "MOCK_FALLBACK",
     symbol: "NIFTY",
     exchange: "NSE_FNO",
     expiry,
@@ -117,6 +118,7 @@ describe("Presets and Multi-Expiry Zustand Store", () => {
 
     market.applyTickFrame({
       type: "tick",
+      feed_status: "MOCK_FALLBACK",
       symbol: "NIFTY",
       chain_expiry: "2026-12-01",
       as_of: "2026-11-25T10:01:00+05:30",

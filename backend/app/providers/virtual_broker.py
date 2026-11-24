@@ -103,7 +103,12 @@ class VirtualSimulatorBroker:
             if instr.limit_price is not None:
                 raw_px = float(instr.limit_price)
             elif instr.contract_id in quotes:
-                raw_px = quotes[instr.contract_id].ltp
+                q = quotes[instr.contract_id]
+                if req.trading_mode == "PAPER_LIVE":
+                    # Fill at live Bid/Ask (Ask for BUY, Bid for SELL) with LTP fallback
+                    raw_px = (q.ask if instr.side == "BUY" and q.ask > 0 else (q.bid if instr.side == "SELL" and q.bid > 0 else q.ltp))
+                else:
+                    raw_px = q.ltp
             else:
                 raise ValueError(f"Unable to resolve market quote for contract {instr.contract_id}")
 

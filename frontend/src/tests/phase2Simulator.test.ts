@@ -6,6 +6,7 @@ import { useStrategyStore } from "@/stores/strategyStore";
 
 function makeSnapshot(asOf: string, spot: number, ceLtp: number): OptionChainSnapshot {
   return {
+    feed_status: "MOCK_FALLBACK",
     symbol: "NIFTY",
     exchange: "NSE_FNO",
     expiry: "2026-11-23",

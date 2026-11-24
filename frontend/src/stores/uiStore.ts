@@ -4,7 +4,7 @@ export type ThemeMode = "light" | "dark";
 export type PnlUnit = "INR" | "POINTS";
 export type DisplayQtyMode = "lots" | "qty";
 export type StrikeWindow = 15 | 25 | 999;
-export type ActiveDrawer = null | "strategies" | "orders";
+export type ActiveDrawer = null | "strategies" | "orders" | "dhan";
 export type PayoffRightTab = "graph" | "table" | "greeks";
 
 export interface ChartOverlaysState {

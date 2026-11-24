@@ -228,6 +228,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/broker/dhan/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Dhan Status */
+        get: operations["get_dhan_status_api_v1_broker_dhan_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/dhan/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Dhan Token */
+        post: operations["save_dhan_token_api_v1_broker_dhan_token_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/dhan/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Renew Dhan Token */
+        post: operations["renew_dhan_token_api_v1_broker_dhan_renew_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/dhan/generate-totp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Dhan Totp Token */
+        post: operations["generate_dhan_totp_token_api_v1_broker_dhan_generate_totp_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/broker/dhan/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disconnect Dhan */
+        post: operations["disconnect_dhan_api_v1_broker_dhan_disconnect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -266,7 +351,7 @@ export interface components {
              * @default SIMULATOR
              * @enum {string}
              */
-            trading_mode: "SIMULATOR" | "PAPER" | "SANDBOX" | "LIVE";
+            trading_mode: "SIMULATOR" | "PAPER" | "PAPER_LIVE" | "SANDBOX" | "LIVE";
             /**
              * Action
              * @default OPEN_LEGS
@@ -327,6 +412,44 @@ export interface components {
              */
             closed_at: string;
         };
+        /** DhanStatusResponse */
+        DhanStatusResponse: {
+            /** Connected */
+            connected: boolean;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "LIVE_DHAN" | "MOCK_FALLBACK" | "TOKEN_EXPIRED" | "DISCONNECTED";
+            /** Client Id Masked */
+            client_id_masked?: string | null;
+            /** Account Name */
+            account_name?: string | null;
+            /** Ucc */
+            ucc?: string | null;
+            /** Expires At */
+            expires_at?: string | null;
+            /** Seconds Remaining */
+            seconds_remaining?: number | null;
+            /** Message */
+            message?: string | null;
+        };
+        /** DhanTokenSaveRequest */
+        DhanTokenSaveRequest: {
+            /** Client Id */
+            client_id: string;
+            /** Access Token */
+            access_token: string;
+        };
+        /** DhanTotpGenerateRequest */
+        DhanTotpGenerateRequest: {
+            /** Client Id */
+            client_id: string;
+            /** Pin */
+            pin: string;
+            /** Totp */
+            totp: string;
+        };
         /** ExecutionResultSchema */
         ExecutionResultSchema: {
             /**
@@ -343,7 +466,7 @@ export interface components {
              * Trading Mode
              * @enum {string}
              */
-            trading_mode: "SIMULATOR" | "PAPER" | "SANDBOX" | "LIVE";
+            trading_mode: "SIMULATOR" | "PAPER" | "PAPER_LIVE" | "SANDBOX" | "LIVE";
             /**
              * Action
              * @enum {string}
@@ -567,6 +690,12 @@ export interface components {
             strike_step: number;
             /** Futures Contract Id */
             futures_contract_id: string;
+            /**
+             * Feed Status
+             * @default MOCK_FALLBACK
+             * @enum {string}
+             */
+            feed_status: "LIVE_DHAN" | "MOCK_FALLBACK" | "TOKEN_EXPIRED" | "DISCONNECTED";
             /** Expiries */
             expiries: components["schemas"]["ExpiryInfoSchema"][];
             /** Rows */
@@ -1116,6 +1245,12 @@ export interface components {
              * @enum {string}
              */
             type: "tick" | "pong" | "error";
+            /**
+             * Feed Status
+             * @default MOCK_FALLBACK
+             * @enum {string}
+             */
+            feed_status: "LIVE_DHAN" | "MOCK_FALLBACK" | "TOKEN_EXPIRED" | "DISCONNECTED";
             /**
              * Symbol
              * @default null
@@ -1671,6 +1806,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dhan_status_api_v1_broker_dhan_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DhanStatusResponse"];
+                };
+            };
+        };
+    };
+    save_dhan_token_api_v1_broker_dhan_token_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DhanTokenSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DhanStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    renew_dhan_token_api_v1_broker_dhan_renew_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DhanStatusResponse"];
+                };
+            };
+        };
+    };
+    generate_dhan_totp_token_api_v1_broker_dhan_generate_totp_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DhanTotpGenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DhanStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disconnect_dhan_api_v1_broker_dhan_disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DhanStatusResponse"];
                 };
             };
         };

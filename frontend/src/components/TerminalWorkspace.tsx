@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { evaluateAnalytics, getInstruments } from "@/lib/api/client";
+import { evaluateAnalytics, getDhanStatus, getInstruments } from "@/lib/api/client";
 import { MarketStreamClient } from "@/lib/api/wsClient";
 import { useMarketStore } from "@/stores/marketStore";
 import { useSimulatorStore } from "@/stores/simulatorStore";
 import { getEffectiveLegs, useStrategyStore } from "@/stores/strategyStore";
 import { useUiStore } from "@/stores/uiStore";
 import { StrategyBuilderPanel } from "./builder/StrategyBuilderPanel";
+import { DhanConnectModal } from "./modals/DhanConnectModal";
 import { OrdersDrawer } from "./modals/OrdersDrawer";
 import { PartialExitDialog } from "./modals/PartialExitDialog";
 import { StrategiesDrawer } from "./modals/StrategiesDrawer";
@@ -24,11 +25,14 @@ export function TerminalWorkspace() {
   const spot = useMarketStore((s) => s.spot);
   const asOfIso = useMarketStore((s) => s.asOfIso);
   const indiaVix = useMarketStore((s) => s.indiaVix);
+  const activeLegQuotes = useMarketStore((s) => s.activeLegQuotes);
   const error = useMarketStore((s) => s.error);
 
   const legs = useStrategyStore((s) => s.legs);
   const lotMultiplier = useStrategyStore((s) => s.lotMultiplier);
   const realizedPnl = useStrategyStore((s) => s.realizedPnl);
+  const dailyMaxLossLimit = useStrategyStore((s) => s.dailyMaxLossLimit);
+  const checkMaxLossCircuitBreaker = useStrategyStore((s) => s.checkMaxLossCircuitBreaker);
   const setMargin = useStrategyStore((s) => s.setMargin);
   const setIsLoadingMargin = useStrategyStore((s) => s.setIsLoadingMargin);
 
@@ -56,6 +60,12 @@ export function TerminalWorkspace() {
     getInstruments()
       .then((specs) => {
         if (mounted) market.setInstruments(specs);
+      })
+      .catch(() => undefined);
+
+    getDhanStatus()
+      .then((st) => {
+        if (mounted) market.setDhanStatus(st);
       })
       .catch(() => undefined);
 
@@ -146,6 +156,31 @@ export function TerminalWorkspace() {
     setIsLoadingMargin,
   ]);
 
+  // Daily Max-Loss Circuit Breaker monitor in Builder / Paper-Live mode
+  useEffect(() => {
+    if (mode !== "builder" || dailyMaxLossLimit === null) return;
+    const openLegs = getEffectiveLegs(
+      legs.filter((l) => l.status === "OPEN" && l.enabled),
+      lotMultiplier
+    );
+    if (openLegs.length === 0) return;
+    let unrealized = 0;
+    for (const leg of openLegs) {
+      const ltp = activeLegQuotes[leg.contract_id]?.ltp ?? leg.entry_price;
+      const diff = leg.side === "BUY" ? ltp - leg.entry_price : leg.entry_price - ltp;
+      unrealized += diff * leg.lots * leg.lot_size;
+    }
+    checkMaxLossCircuitBreaker(unrealized + realizedPnl);
+  }, [
+    mode,
+    dailyMaxLossLimit,
+    legs,
+    lotMultiplier,
+    activeLegQuotes,
+    realizedPnl,
+    checkMaxLossCircuitBreaker,
+  ]);
+
   // Simulator AutoPlay loop
   useEffect(() => {
     if (mode !== "simulator" || !isPlaying) return;
@@ -185,6 +220,7 @@ export function TerminalWorkspace() {
       <PartialExitDialog />
       <StrategiesDrawer />
       <OrdersDrawer />
+      <DhanConnectModal />
     </div>
   );
 }

@@ -22,6 +22,7 @@ dist/
 
 # Data & Local Artifacts
 data/parquet/**/*.parquet
+data/cache/
 *.duckdb
 *.sqlite3
 *.db

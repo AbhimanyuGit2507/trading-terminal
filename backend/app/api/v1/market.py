@@ -78,6 +78,7 @@ async def get_option_chain(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
+    feed_status = getattr(provider, "feed_status", "MOCK_FALLBACK")
     return OptionChainSnapshotSchema(
         symbol=symbol,
         exchange=chain.exchange,  # type: ignore[arg-type]
@@ -91,6 +92,7 @@ async def get_option_chain(
         lot_size=chain.lot_size,
         strike_step=chain.strike_step,
         futures_contract_id=chain.futures_contract_id,
+        feed_status=feed_status,
         expiries=[
             ExpiryInfoSchema(
                 expiry_date=e.expiry_date,

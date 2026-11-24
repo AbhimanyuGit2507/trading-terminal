@@ -785,6 +785,151 @@
           }
         }
       }
+    },
+    "/api/v1/broker/dhan/status": {
+      "get": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Get Dhan Status",
+        "operationId": "get_dhan_status_api_v1_broker_dhan_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DhanStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/dhan/token": {
+      "post": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Save Dhan Token",
+        "operationId": "save_dhan_token_api_v1_broker_dhan_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DhanTokenSaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DhanStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/dhan/renew": {
+      "post": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Renew Dhan Token",
+        "operationId": "renew_dhan_token_api_v1_broker_dhan_renew_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DhanStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/dhan/generate-totp": {
+      "post": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Generate Dhan Totp Token",
+        "operationId": "generate_dhan_totp_token_api_v1_broker_dhan_generate_totp_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DhanTotpGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DhanStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/broker/dhan/disconnect": {
+      "post": {
+        "tags": [
+          "broker"
+        ],
+        "summary": "Disconnect Dhan",
+        "operationId": "disconnect_dhan_api_v1_broker_dhan_disconnect_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DhanStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -902,6 +1047,7 @@
             "enum": [
               "SIMULATOR",
               "PAPER",
+              "PAPER_LIVE",
               "SANDBOX",
               "LIVE"
             ],
@@ -1051,6 +1197,147 @@
         ],
         "title": "ClosedLegRecordSchema"
       },
+      "DhanStatusResponse": {
+        "properties": {
+          "connected": {
+            "type": "boolean",
+            "title": "Connected"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "LIVE_DHAN",
+              "MOCK_FALLBACK",
+              "TOKEN_EXPIRED",
+              "DISCONNECTED"
+            ],
+            "title": "Mode"
+          },
+          "client_id_masked": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id Masked"
+          },
+          "account_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Name"
+          },
+          "ucc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ucc"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "seconds_remaining": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconds Remaining"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connected",
+          "mode"
+        ],
+        "title": "DhanStatusResponse"
+      },
+      "DhanTokenSaveRequest": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Client Id"
+          },
+          "access_token": {
+            "type": "string",
+            "minLength": 8,
+            "title": "Access Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id",
+          "access_token"
+        ],
+        "title": "DhanTokenSaveRequest"
+      },
+      "DhanTotpGenerateRequest": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 2,
+            "title": "Client Id"
+          },
+          "pin": {
+            "type": "string",
+            "maxLength": 12,
+            "minLength": 4,
+            "title": "Pin"
+          },
+          "totp": {
+            "type": "string",
+            "maxLength": 8,
+            "minLength": 6,
+            "title": "Totp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id",
+          "pin",
+          "totp"
+        ],
+        "title": "DhanTotpGenerateRequest"
+      },
       "ExecutionResultSchema": {
         "properties": {
           "idempotency_key": {
@@ -1068,6 +1355,7 @@
             "enum": [
               "SIMULATOR",
               "PAPER",
+              "PAPER_LIVE",
               "SANDBOX",
               "LIVE"
             ],
@@ -1560,6 +1848,17 @@
           "futures_contract_id": {
             "type": "string",
             "title": "Futures Contract Id"
+          },
+          "feed_status": {
+            "type": "string",
+            "enum": [
+              "LIVE_DHAN",
+              "MOCK_FALLBACK",
+              "TOKEN_EXPIRED",
+              "DISCONNECTED"
+            ],
+            "title": "Feed Status",
+            "default": "MOCK_FALLBACK"
           },
           "expiries": {
             "items": {
@@ -2971,6 +3270,17 @@
               "error"
             ],
             "title": "Type",
+            "type": "string"
+          },
+          "feed_status": {
+            "default": "MOCK_FALLBACK",
+            "enum": [
+              "LIVE_DHAN",
+              "MOCK_FALLBACK",
+              "TOKEN_EXPIRED",
+              "DISCONNECTED"
+            ],
+            "title": "Feed Status",
             "type": "string"
           },
           "symbol": {

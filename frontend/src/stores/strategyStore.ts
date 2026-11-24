@@ -56,12 +56,18 @@ export interface StrategyState {
   margin: MarginBreakdown | null;
   isLoadingMargin: boolean;
   isExecuting: boolean;
+  dailyMaxLossLimit: number | null;
+  autoSquareOffOnMaxLoss: boolean;
+  maxLossTriggered: boolean;
   lastExecutionNotice: string | null;
   whatIf: WhatIfState;
   workspacesByMode: Record<"builder" | "simulator", ModeWorkspaceSnapshot>;
 
   setStrategyName: (name: string) => void;
   setLotMultiplier: (factor: number) => void;
+  setDailyMaxLossLimit: (limit: number | null) => void;
+  setAutoSquareOffOnMaxLoss: (enabled: boolean) => void;
+  checkMaxLossCircuitBreaker: (totalPnl: number) => void;
   setMargin: (margin: MarginBreakdown | null) => void;
   setIsLoadingMargin: (loading: boolean) => void;
   setWhatIf: (patch: Partial<WhatIfState>) => void;
@@ -103,6 +109,9 @@ export const useStrategyStore = create<StrategyState>()(
     margin: null,
     isLoadingMargin: false,
     isExecuting: false,
+    dailyMaxLossLimit: null,
+    autoSquareOffOnMaxLoss: true,
+    maxLossTriggered: false,
     lastExecutionNotice: null,
     whatIf: {
       targetSpot: 24350,
@@ -118,6 +127,32 @@ export const useStrategyStore = create<StrategyState>()(
     setLotMultiplier: (factor) => {
       const safe = Math.max(1, Math.floor(Number.isFinite(factor) ? factor : 1));
       set({ lotMultiplier: safe });
+    },
+    setDailyMaxLossLimit: (limit) =>
+      set({
+        dailyMaxLossLimit: limit !== null && limit > 0 ? Math.round(limit) : null,
+        maxLossTriggered: false,
+      }),
+    setAutoSquareOffOnMaxLoss: (autoSquareOffOnMaxLoss) => set({ autoSquareOffOnMaxLoss }),
+    checkMaxLossCircuitBreaker: (totalPnl) => {
+      const cur = get();
+      if (
+        cur.dailyMaxLossLimit === null ||
+        cur.dailyMaxLossLimit <= 0 ||
+        cur.maxLossTriggered ||
+        cur.legs.filter((l) => l.enabled && l.status === "OPEN").length === 0
+      ) {
+        return;
+      }
+      if (totalPnl <= -cur.dailyMaxLossLimit) {
+        set({
+          maxLossTriggered: true,
+          lastExecutionNotice: `MAX LOSS BREACHED (₹${Math.abs(totalPnl).toFixed(0)} >= ₹${cur.dailyMaxLossLimit}) — ${cur.autoSquareOffOnMaxLoss ? "Auto Paper Square-Off triggered!" : "Alert active!"}`,
+        });
+        if (cur.autoSquareOffOnMaxLoss && !cur.isExecuting) {
+          void get().squareOffAll();
+        }
+      }
     },
     setMargin: (margin) => set({ margin }),
     setIsLoadingMargin: (isLoadingMargin) => set({ isLoadingMargin }),
@@ -254,11 +289,13 @@ export const useStrategyStore = create<StrategyState>()(
       const liveQuote = market.activeLegQuotes[leg.contract_id];
       const closingSide: OptionSide = leg.side === "BUY" ? "SELL" : "BUY";
 
+      const tradingMode = market.feedStatus === "LIVE_DHAN" ? "PAPER_LIVE" : "SIMULATOR";
+
       set({ isExecuting: true });
       try {
         const res = await executeOrders({
           strategy_id: state.strategyId,
-          trading_mode: "SIMULATOR",
+          trading_mode: tradingMode,
           action: clampedExitLots === effectiveOpenLots ? "SQUARE_OFF_ALL" : "PARTIAL_EXIT",
           slice_if_frozen: true,
           as_of: market.asOfIso || null,
@@ -345,11 +382,12 @@ export const useStrategyStore = create<StrategyState>()(
       if (openLegs.length === 0) return;
 
       const market = useMarketStore.getState();
+      const tradingMode = market.feedStatus === "LIVE_DHAN" ? "PAPER_LIVE" : "SIMULATOR";
       set({ isExecuting: true });
       try {
         const res = await executeOrders({
           strategy_id: state.strategyId,
-          trading_mode: "SIMULATOR",
+          trading_mode: tradingMode,
           action: "SQUARE_OFF_ALL",
           slice_if_frozen: true,
           as_of: market.asOfIso || null,

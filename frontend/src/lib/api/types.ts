@@ -8,6 +8,11 @@ export type OptionSide = ApiSchemas["StrategyLegSchema"]["side"];
 export type LegOptionType = ApiSchemas["StrategyLegSchema"]["option_type"];
 export type TradingMode = NonNullable<ApiSchemas["BatchOrderRequest"]["trading_mode"]>;
 export type SimulatorStepSize = ApiSchemas["SimulatorStepRequest"]["step"];
+export type FeedStatus = NonNullable<ApiSchemas["OptionChainSnapshotSchema"]["feed_status"]>;
+
+export type DhanStatusResponse = ApiSchemas["DhanStatusResponse"];
+export type DhanTokenSaveRequest = ApiSchemas["DhanTokenSaveRequest"];
+export type DhanTotpGenerateRequest = ApiSchemas["DhanTotpGenerateRequest"];
 
 export type InstrumentSpec = ApiSchemas["InstrumentSpecSchema"];
 export type ExpiryInfo = ApiSchemas["ExpiryInfoSchema"];

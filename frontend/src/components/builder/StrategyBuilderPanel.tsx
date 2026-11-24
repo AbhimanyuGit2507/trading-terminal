@@ -51,12 +51,19 @@ export function StrategyBuilderPanel() {
   const setLastExecutionNotice = useStrategyStore((s) => s.setLastExecutionNotice);
 
   const symbol = useMarketStore((s) => s.symbol);
+  const feedStatus = useMarketStore((s) => s.feedStatus);
   const lotSize = useMarketStore((s) => s.lotSize);
   const expiries = useMarketStore((s) => s.expiries);
   const selectedChainExpiry = useMarketStore((s) => s.selectedChainExpiry);
   const asOfIso = useMarketStore((s) => s.asOfIso);
   const activeLegQuotes = useMarketStore((s) => s.activeLegQuotes);
   const getCurrentSnapshot = useMarketStore((s) => s.getCurrentSnapshot);
+
+  const dailyMaxLossLimit = useStrategyStore((s) => s.dailyMaxLossLimit);
+  const autoSquareOffOnMaxLoss = useStrategyStore((s) => s.autoSquareOffOnMaxLoss);
+  const maxLossTriggered = useStrategyStore((s) => s.maxLossTriggered);
+  const setDailyMaxLossLimit = useStrategyStore((s) => s.setDailyMaxLossLimit);
+  const setAutoSquareOffOnMaxLoss = useStrategyStore((s) => s.setAutoSquareOffOnMaxLoss);
 
   const mode = useSimulatorStore((s) => s.mode);
   const displayQtyMode = useUiStore((s) => s.displayQtyMode);
@@ -129,9 +136,10 @@ export function StrategyBuilderPanel() {
     );
     if (openLegs.length === 0) return;
     try {
+      const tradingMode = feedStatus === "LIVE_DHAN" ? "PAPER_LIVE" : "SIMULATOR";
       const res = await executeOrders({
         strategy_id: strategyId,
-        trading_mode: "SIMULATOR",
+        trading_mode: tradingMode,
         action: "OPEN_LEGS",
         slice_if_frozen: true,
         as_of: asOfIso || null,
@@ -146,7 +154,7 @@ export function StrategyBuilderPanel() {
       });
       const childCount = res.fills.filter((f) => !f.is_parent).length;
       setLastExecutionNotice(
-        `Virtual order filled (${childCount} slice fill${childCount === 1 ? "" : "s"}, key ${res.idempotency_key.slice(0, 8)}…)`
+        `${tradingMode === "PAPER_LIVE" ? "Paper-Live" : "Virtual"} order filled (${childCount} slice fill${childCount === 1 ? "" : "s"}, key ${res.idempotency_key.slice(0, 8)}…)`
       );
     } catch (err) {
       setLastExecutionNotice(
@@ -309,6 +317,41 @@ export function StrategyBuilderPanel() {
             </button>
           </div>
 
+          <div
+            className={`flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] ${
+              maxLossTriggered
+                ? "border-rose-400 bg-rose-50 text-rose-800 dark:border-rose-500/50 dark:bg-rose-950/30 dark:text-rose-200"
+                : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            }`}
+            title="Daily Max-Loss circuit breaker (in INR)"
+          >
+            <label htmlFor="daily-max-loss-input" className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400">
+              Max Loss ₹
+            </label>
+            <input
+              id="daily-max-loss-input"
+              type="number"
+              min={0}
+              step={500}
+              placeholder="Off"
+              value={dailyMaxLossLimit ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                setDailyMaxLossLimit(raw === "" ? null : Number(raw));
+              }}
+              className="w-16 bg-transparent font-mono text-[11px] font-semibold text-slate-900 focus:outline-none dark:text-white"
+            />
+            <label className="inline-flex cursor-pointer items-center gap-1 border-l border-slate-200 pl-1.5 text-[10px] dark:border-slate-700">
+              <input
+                type="checkbox"
+                checked={autoSquareOffOnMaxLoss}
+                onChange={(e) => setAutoSquareOffOnMaxLoss(e.target.checked)}
+                className="h-3 w-3 rounded border-slate-300 accent-rose-600"
+              />
+              <span>Auto Sq</span>
+            </label>
+          </div>
+
           <button
             type="button"
             disabled={legs.length === 0 || isExecuting}
@@ -316,7 +359,7 @@ export function StrategyBuilderPanel() {
             className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
           >
             <Send className="h-3 w-3" />
-            <span>Log Order</span>
+            <span>{feedStatus === "LIVE_DHAN" ? "Paper Log" : "Log Order"}</span>
           </button>
 
           <button
