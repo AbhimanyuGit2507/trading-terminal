@@ -36,6 +36,9 @@
     },
     "/api/v1/market/instruments": {
       "get": {
+        "tags": [
+          "market"
+        ],
         "summary": "List Instruments",
         "operationId": "list_instruments_api_v1_market_instruments_get",
         "parameters": [
@@ -85,8 +88,91 @@
         }
       }
     },
+    "/api/v1/market/expiries": {
+      "get": {
+        "tags": [
+          "market"
+        ],
+        "summary": "List Expiries",
+        "operationId": "list_expiries_api_v1_market_expiries_get",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "NIFTY",
+                "BANKNIFTY",
+                "FINNIFTY",
+                "SENSEX"
+              ],
+              "type": "string",
+              "default": "NIFTY",
+              "title": "Symbol"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 8,
+              "title": "Count"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExpiryInfoSchema"
+                  },
+                  "title": "Response List Expiries Api V1 Market Expiries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/market/chain": {
       "get": {
+        "tags": [
+          "market"
+        ],
         "summary": "Get Option Chain",
         "operationId": "get_option_chain_api_v1_market_chain_get",
         "parameters": [
@@ -165,8 +251,52 @@
         }
       }
     },
+    "/api/v1/market/quotes": {
+      "post": {
+        "tags": [
+          "market"
+        ],
+        "summary": "Get Batch Quotes",
+        "operationId": "get_batch_quotes_api_v1_market_quotes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteBatchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/analytics/evaluate": {
       "post": {
+        "tags": [
+          "analytics"
+        ],
         "summary": "Evaluate Strategy Payoff",
         "operationId": "evaluate_strategy_payoff_api_v1_analytics_evaluate_post",
         "requestBody": {
@@ -203,41 +333,34 @@
         }
       }
     },
-    "/api/v1/market/quotes-schema": {
-      "get": {
-        "summary": " Quotes Schema Placeholder",
-        "operationId": "_quotes_schema_placeholder_api_v1_market_quotes_schema_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "$ref": "#/components/schemas/LegQuoteSchema"
-                  },
-                  "type": "object",
-                  "title": "Response  Quotes Schema Placeholder Api V1 Market Quotes Schema Get"
-                }
-              }
+    "/api/v1/orders/execute": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Execute Orders",
+        "operationId": "execute_orders_api_v1_orders_execute_post",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "X-Idempotency-Key"
             }
           }
-        }
-      }
-    },
-    "/api/v1/orders/preview-schema": {
-      "post": {
-        "summary": " Orders Schema Placeholder",
-        "operationId": "_orders_schema_placeholder_api_v1_orders_preview_schema_post",
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BatchOrderRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -263,10 +386,90 @@
         }
       }
     },
+    "/api/v1/orders": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "List Orders",
+        "operationId": "list_orders_api_v1_orders_get",
+        "parameters": [
+          {
+            "name": "strategy_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Strategy Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderAuditLogSchema"
+                  },
+                  "title": "Response List Orders Api V1 Orders Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/strategies": {
       "get": {
-        "summary": "List Strategies Placeholder",
-        "operationId": "list_strategies_placeholder_api_v1_strategies_get",
+        "tags": [
+          "strategies"
+        ],
+        "summary": "List Strategies",
+        "operationId": "list_strategies_api_v1_strategies_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -277,7 +480,215 @@
                     "$ref": "#/components/schemas/StrategyResponse"
                   },
                   "type": "array",
-                  "title": "Response List Strategies Placeholder Api V1 Strategies Get"
+                  "title": "Response List Strategies Api V1 Strategies Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "strategies"
+        ],
+        "summary": "Create Strategy",
+        "operationId": "create_strategy_api_v1_strategies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StrategyCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/strategies/{strategy_id}": {
+      "get": {
+        "tags": [
+          "strategies"
+        ],
+        "summary": "Get Strategy",
+        "operationId": "get_strategy_api_v1_strategies__strategy_id__get",
+        "parameters": [
+          {
+            "name": "strategy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Strategy Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "strategies"
+        ],
+        "summary": "Update Strategy",
+        "operationId": "update_strategy_api_v1_strategies__strategy_id__put",
+        "parameters": [
+          {
+            "name": "strategy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Strategy Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StrategyUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "strategies"
+        ],
+        "summary": "Delete Strategy",
+        "operationId": "delete_strategy_api_v1_strategies__strategy_id__delete",
+        "parameters": [
+          {
+            "name": "strategy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Strategy Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulator/step": {
+      "post": {
+        "tags": [
+          "simulator"
+        ],
+        "summary": "Step Simulator",
+        "operationId": "step_simulator_api_v1_simulator_step_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulatorStepRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulatorStepResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -291,8 +702,15 @@
       "BatchOrderRequest": {
         "properties": {
           "idempotency_key": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Idempotency Key"
           },
           "strategy_id": {
@@ -330,25 +748,147 @@
             "title": "Trading Mode",
             "default": "SIMULATOR"
           },
+          "action": {
+            "type": "string",
+            "enum": [
+              "OPEN_LEGS",
+              "ADD_LOTS",
+              "PARTIAL_EXIT",
+              "FLIP_SIDE",
+              "SQUARE_OFF_ALL"
+            ],
+            "title": "Action",
+            "default": "OPEN_LEGS"
+          },
           "slice_if_frozen": {
             "type": "boolean",
             "title": "Slice If Frozen",
             "default": true
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
           },
           "legs": {
             "items": {
               "$ref": "#/components/schemas/OrderLegInstruction"
             },
             "type": "array",
+            "minItems": 1,
             "title": "Legs"
           }
         },
         "type": "object",
         "required": [
-          "idempotency_key",
           "legs"
         ],
         "title": "BatchOrderRequest"
+      },
+      "ClosedLegRecordSchema": {
+        "properties": {
+          "leg_id": {
+            "type": "string",
+            "title": "Leg Id"
+          },
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiry"
+          },
+          "strike": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strike"
+          },
+          "option_type": {
+            "type": "string",
+            "enum": [
+              "CE",
+              "PE",
+              "FUT"
+            ],
+            "title": "Option Type"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "SELL"
+            ],
+            "title": "Side"
+          },
+          "lots_closed": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Lots Closed"
+          },
+          "lot_size": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Lot Size"
+          },
+          "entry_price": {
+            "type": "number",
+            "title": "Entry Price"
+          },
+          "exit_price": {
+            "type": "number",
+            "title": "Exit Price"
+          },
+          "realized_pnl": {
+            "type": "number",
+            "title": "Realized Pnl"
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Closed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "leg_id",
+          "contract_id",
+          "symbol",
+          "expiry",
+          "option_type",
+          "side",
+          "lots_closed",
+          "lot_size",
+          "entry_price",
+          "exit_price",
+          "realized_pnl",
+          "closed_at"
+        ],
+        "title": "ClosedLegRecordSchema"
       },
       "ExecutionResultSchema": {
         "properties": {
@@ -372,6 +912,22 @@
             ],
             "title": "Trading Mode"
           },
+          "action": {
+            "type": "string",
+            "enum": [
+              "OPEN_LEGS",
+              "ADD_LOTS",
+              "PARTIAL_EXIT",
+              "FLIP_SIDE",
+              "SQUARE_OFF_ALL"
+            ],
+            "title": "Action"
+          },
+          "realized_pnl_delta": {
+            "type": "string",
+            "title": "Realized Pnl Delta",
+            "default": "0.00"
+          },
           "fills": {
             "items": {
               "$ref": "#/components/schemas/OrderFillSchema"
@@ -384,6 +940,7 @@
         "required": [
           "idempotency_key",
           "trading_mode",
+          "action",
           "fills"
         ],
         "title": "ExecutionResultSchema"
@@ -876,6 +1433,129 @@
         ],
         "title": "OptionChainSnapshotSchema"
       },
+      "OrderAuditLogSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "strategy_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy Id"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Idempotency Key"
+          },
+          "parent_order_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Order Id"
+          },
+          "slice_index": {
+            "type": "integer",
+            "title": "Slice Index"
+          },
+          "total_slices": {
+            "type": "integer",
+            "title": "Total Slices"
+          },
+          "trading_mode": {
+            "type": "string",
+            "title": "Trading Mode"
+          },
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "side": {
+            "type": "string",
+            "title": "Side"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "lots": {
+            "type": "integer",
+            "title": "Lots"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "limit_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Price"
+          },
+          "fill_price": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fill Price"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "executed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Executed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "idempotency_key",
+          "slice_index",
+          "total_slices",
+          "trading_mode",
+          "contract_id",
+          "side",
+          "action",
+          "lots",
+          "quantity",
+          "status",
+          "executed_at",
+          "created_at"
+        ],
+        "title": "OrderAuditLogSchema"
+      },
       "OrderFillSchema": {
         "properties": {
           "order_id": {
@@ -903,6 +1583,11 @@
             "type": "integer",
             "title": "Total Slices"
           },
+          "is_parent": {
+            "type": "boolean",
+            "title": "Is Parent",
+            "default": false
+          },
           "contract_id": {
             "type": "string",
             "title": "Contract Id"
@@ -914,6 +1599,10 @@
               "SELL"
             ],
             "title": "Side"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
           },
           "lots": {
             "type": "integer",
@@ -950,6 +1639,7 @@
           "total_slices",
           "contract_id",
           "side",
+          "action",
           "lots",
           "quantity",
           "fill_price",
@@ -960,6 +1650,17 @@
       },
       "OrderLegInstruction": {
         "properties": {
+          "leg_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leg Id"
+          },
           "contract_id": {
             "type": "string",
             "title": "Contract Id"
@@ -972,25 +1673,21 @@
             ],
             "title": "Side"
           },
-          "action": {
-            "type": "string",
-            "enum": [
-              "OPEN",
-              "PARTIAL_EXIT",
-              "CLOSE",
-              "FLIP"
-            ],
-            "title": "Action",
-            "default": "OPEN"
-          },
           "lots": {
             "type": "integer",
             "minimum": 1.0,
             "title": "Lots"
           },
           "lot_size": {
-            "type": "integer",
-            "minimum": 1.0,
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Lot Size"
           },
           "limit_price": {
@@ -1006,14 +1703,27 @@
               }
             ],
             "title": "Limit Price"
+          },
+          "entry_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Price"
           }
         },
         "type": "object",
         "required": [
           "contract_id",
           "side",
-          "lots",
-          "lot_size"
+          "lots"
         ],
         "title": "OrderLegInstruction"
       },
@@ -1224,6 +1934,241 @@
         ],
         "title": "PayoffPointSchema"
       },
+      "QuoteBatchRequest": {
+        "properties": {
+          "contract_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Contract Ids"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract_ids"
+        ],
+        "title": "QuoteBatchRequest"
+      },
+      "QuoteBatchResponse": {
+        "properties": {
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "quotes": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LegQuoteSchema"
+            },
+            "type": "object",
+            "title": "Quotes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "quotes"
+        ],
+        "title": "QuoteBatchResponse"
+      },
+      "SimulatorStepRequest": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol",
+            "default": "NIFTY"
+          },
+          "current_as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Current As Of"
+          },
+          "step": {
+            "type": "string",
+            "enum": [
+              "-1d",
+              "-30m",
+              "-15m",
+              "-5m",
+              "-1m",
+              "+1m",
+              "+5m",
+              "+15m",
+              "+30m",
+              "+1d"
+            ],
+            "title": "Step"
+          },
+          "chain_expiry": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain Expiry"
+          },
+          "active_contracts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Active Contracts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_as_of",
+          "step"
+        ],
+        "title": "SimulatorStepRequest"
+      },
+      "SimulatorStepResponse": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "previous_as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Previous As Of"
+          },
+          "new_as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "New As Of"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/OptionChainSnapshotSchema"
+          },
+          "leg_quotes": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LegQuoteSchema"
+            },
+            "type": "object",
+            "title": "Leg Quotes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "previous_as_of",
+          "new_as_of",
+          "chain",
+          "leg_quotes"
+        ],
+        "title": "SimulatorStepResponse"
+      },
+      "StrategyCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "builder",
+              "simulator",
+              "paper",
+              "live"
+            ],
+            "title": "Mode",
+            "default": "builder"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyLegSchema"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "closed_legs": {
+            "items": {
+              "$ref": "#/components/schemas/ClosedLegRecordSchema"
+            },
+            "type": "array",
+            "title": "Closed Legs"
+          },
+          "realized_pnl": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Realized Pnl",
+            "default": "0.00"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "symbol"
+        ],
+        "title": "StrategyCreateRequest"
+      },
       "StrategyLegSchema": {
         "properties": {
           "leg_id": {
@@ -1379,9 +2324,21 @@
             "type": "array",
             "title": "Legs"
           },
+          "closed_legs": {
+            "items": {
+              "$ref": "#/components/schemas/ClosedLegRecordSchema"
+            },
+            "type": "array",
+            "title": "Closed Legs"
+          },
           "realized_pnl": {
             "type": "string",
             "title": "Realized Pnl"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
           },
           "notes": {
             "anyOf": [
@@ -1412,11 +2369,131 @@
           "symbol",
           "mode",
           "legs",
+          "closed_legs",
           "realized_pnl",
+          "metadata",
           "created_at",
           "updated_at"
         ],
         "title": "StrategyResponse"
+      },
+      "StrategyUpdateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "NIFTY",
+                  "BANKNIFTY",
+                  "FINNIFTY",
+                  "SENSEX"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "builder",
+                  "simulator",
+                  "paper",
+                  "live"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "legs": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/StrategyLegSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legs"
+          },
+          "closed_legs": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ClosedLegRecordSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Legs"
+          },
+          "realized_pnl": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Realized Pnl"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "title": "StrategyUpdateRequest"
       },
       "ValidationError": {
         "properties": {
@@ -1481,6 +2558,421 @@
           "target_datetime"
         ],
         "title": "WhatIfParamsSchema"
+      },
+      "WsSubscribeMessage": {
+        "properties": {
+          "action": {
+            "enum": [
+              "subscribe",
+              "unsubscribe",
+              "ping"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "symbol": {
+            "default": "NIFTY",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol",
+            "type": "string"
+          },
+          "chain_expiry": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chain Expiry"
+          },
+          "active_contracts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Active Contracts",
+            "type": "array"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "WsSubscribeMessage",
+        "type": "object"
+      },
+      "WsTickFrameSchema": {
+        "$defs": {
+          "LegQuoteSchema": {
+            "description": "Live/simulated quote for any active leg contract (supports multi-expiry activeLegQuotes).",
+            "properties": {
+              "contract_id": {
+                "title": "Contract Id",
+                "type": "string"
+              },
+              "expiry": {
+                "format": "date",
+                "title": "Expiry",
+                "type": "string"
+              },
+              "strike": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Strike"
+              },
+              "option_type": {
+                "enum": [
+                  "CE",
+                  "PE",
+                  "FUT"
+                ],
+                "title": "Option Type",
+                "type": "string"
+              },
+              "ltp": {
+                "title": "Ltp",
+                "type": "number"
+              },
+              "bid": {
+                "title": "Bid",
+                "type": "number"
+              },
+              "ask": {
+                "title": "Ask",
+                "type": "number"
+              },
+              "iv": {
+                "title": "Iv",
+                "type": "number"
+              },
+              "delta": {
+                "title": "Delta",
+                "type": "number"
+              },
+              "gamma": {
+                "title": "Gamma",
+                "type": "number"
+              },
+              "theta": {
+                "title": "Theta",
+                "type": "number"
+              },
+              "vega": {
+                "title": "Vega",
+                "type": "number"
+              },
+              "forward_price": {
+                "title": "Forward Price",
+                "type": "number"
+              },
+              "updated_at": {
+                "format": "date-time",
+                "title": "Updated At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "contract_id",
+              "expiry",
+              "option_type",
+              "ltp",
+              "bid",
+              "ask",
+              "iv",
+              "delta",
+              "gamma",
+              "theta",
+              "vega",
+              "forward_price",
+              "updated_at"
+            ],
+            "title": "LegQuoteSchema",
+            "type": "object"
+          },
+          "OptionChainRowSchema": {
+            "properties": {
+              "strike": {
+                "title": "Strike",
+                "type": "number"
+              },
+              "ce_contract_id": {
+                "title": "Ce Contract Id",
+                "type": "string"
+              },
+              "pe_contract_id": {
+                "title": "Pe Contract Id",
+                "type": "string"
+              },
+              "ce_ltp": {
+                "title": "Ce Ltp",
+                "type": "number"
+              },
+              "ce_bid": {
+                "title": "Ce Bid",
+                "type": "number"
+              },
+              "ce_ask": {
+                "title": "Ce Ask",
+                "type": "number"
+              },
+              "ce_iv": {
+                "title": "Ce Iv",
+                "type": "number"
+              },
+              "ce_delta": {
+                "title": "Ce Delta",
+                "type": "number"
+              },
+              "ce_gamma": {
+                "title": "Ce Gamma",
+                "type": "number"
+              },
+              "ce_theta": {
+                "title": "Ce Theta",
+                "type": "number"
+              },
+              "ce_vega": {
+                "title": "Ce Vega",
+                "type": "number"
+              },
+              "ce_oi": {
+                "title": "Ce Oi",
+                "type": "integer"
+              },
+              "ce_oi_change": {
+                "title": "Ce Oi Change",
+                "type": "integer"
+              },
+              "pe_ltp": {
+                "title": "Pe Ltp",
+                "type": "number"
+              },
+              "pe_bid": {
+                "title": "Pe Bid",
+                "type": "number"
+              },
+              "pe_ask": {
+                "title": "Pe Ask",
+                "type": "number"
+              },
+              "pe_iv": {
+                "title": "Pe Iv",
+                "type": "number"
+              },
+              "pe_delta": {
+                "title": "Pe Delta",
+                "type": "number"
+              },
+              "pe_gamma": {
+                "title": "Pe Gamma",
+                "type": "number"
+              },
+              "pe_theta": {
+                "title": "Pe Theta",
+                "type": "number"
+              },
+              "pe_vega": {
+                "title": "Pe Vega",
+                "type": "number"
+              },
+              "pe_oi": {
+                "title": "Pe Oi",
+                "type": "integer"
+              },
+              "pe_oi_change": {
+                "title": "Pe Oi Change",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "strike",
+              "ce_contract_id",
+              "pe_contract_id",
+              "ce_ltp",
+              "ce_bid",
+              "ce_ask",
+              "ce_iv",
+              "ce_delta",
+              "ce_gamma",
+              "ce_theta",
+              "ce_vega",
+              "ce_oi",
+              "ce_oi_change",
+              "pe_ltp",
+              "pe_bid",
+              "pe_ask",
+              "pe_iv",
+              "pe_delta",
+              "pe_gamma",
+              "pe_theta",
+              "pe_vega",
+              "pe_oi",
+              "pe_oi_change"
+            ],
+            "title": "OptionChainRowSchema",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "type": {
+            "enum": [
+              "tick",
+              "pong",
+              "error"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "enum": [
+                  "NIFTY",
+                  "BANKNIFTY",
+                  "FINNIFTY",
+                  "SENSEX"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Symbol"
+          },
+          "chain_expiry": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chain Expiry"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "As Of"
+          },
+          "spot": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Spot"
+          },
+          "futures_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Futures Price"
+          },
+          "forward_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Forward Price"
+          },
+          "india_vix": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "India Vix"
+          },
+          "atm_strike": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Atm Strike"
+          },
+          "chain_deltas": {
+            "items": {
+              "$ref": "#/components/schemas/OptionChainRowSchema"
+            },
+            "title": "Chain Deltas",
+            "type": "array"
+          },
+          "leg_quotes": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LegQuoteSchema"
+            },
+            "title": "Leg Quotes",
+            "type": "object"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Message"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "WsTickFrameSchema",
+        "type": "object"
       }
     }
   }

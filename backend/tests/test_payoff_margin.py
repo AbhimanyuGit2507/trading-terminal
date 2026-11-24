@@ -56,3 +56,4 @@ def test_margin_hedge_benefit_iron_condor_vs_naked_strangle() -> None:
 
     assert m_condor.total_margin < m_strangle.total_margin
     assert m_condor.hedge_benefit > 0.0
+

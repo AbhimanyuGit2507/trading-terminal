@@ -31,9 +31,14 @@ class Settings(BaseSettings):
     default_risk_free_rate: float = 0.0
     include_charges_default: bool = False
 
+    # Mock market streaming defaults
+    mock_live_jitter: bool = False
+    ws_tick_interval_ms: int = 250
+
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+

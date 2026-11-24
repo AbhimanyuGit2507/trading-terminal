@@ -15,3 +15,4 @@ NAMING_CONVENTION = {
 
 class Base(AsyncAttrs, DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+

@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/market/expiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Expiries */
+        get: operations["list_expiries_api_v1_market_expiries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/market/chain": {
         parameters: {
             query?: never;
@@ -49,6 +66,23 @@ export interface paths {
         get: operations["get_option_chain_api_v1_market_chain_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/market/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Get Batch Quotes */
+        post: operations["get_batch_quotes_api_v1_market_quotes_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -72,24 +106,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/market/quotes-schema": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Quotes Schema Placeholder */
-        get: operations["_quotes_schema_placeholder_api_v1_market_quotes_schema_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orders/preview-schema": {
+    "/api/v1/orders/execute": {
         parameters: {
             query?: never;
             header?: never;
@@ -98,8 +115,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Orders Schema Placeholder */
-        post: operations["_orders_schema_placeholder_api_v1_orders_preview_schema_post"];
+        /** Execute Orders */
+        post: operations["execute_orders_api_v1_orders_execute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Orders */
+        get: operations["list_orders_api_v1_orders_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -113,10 +147,47 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Strategies Placeholder */
-        get: operations["list_strategies_placeholder_api_v1_strategies_get"];
+        /** List Strategies */
+        get: operations["list_strategies_api_v1_strategies_get"];
         put?: never;
+        /** Create Strategy */
+        post: operations["create_strategy_api_v1_strategies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/strategies/{strategy_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Strategy */
+        get: operations["get_strategy_api_v1_strategies__strategy_id__get"];
+        /** Update Strategy */
+        put: operations["update_strategy_api_v1_strategies__strategy_id__put"];
         post?: never;
+        /** Delete Strategy */
+        delete: operations["delete_strategy_api_v1_strategies__strategy_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulator/step": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Step Simulator */
+        post: operations["step_simulator_api_v1_simulator_step_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -129,11 +200,8 @@ export interface components {
     schemas: {
         /** BatchOrderRequest */
         BatchOrderRequest: {
-            /**
-             * Idempotency Key
-             * Format: uuid
-             */
-            idempotency_key: string;
+            /** Idempotency Key */
+            idempotency_key?: string | null;
             /** Strategy Id */
             strategy_id?: string | null;
             /** Parent Order Id */
@@ -145,12 +213,64 @@ export interface components {
              */
             trading_mode: "SIMULATOR" | "PAPER" | "SANDBOX" | "LIVE";
             /**
+             * Action
+             * @default OPEN_LEGS
+             * @enum {string}
+             */
+            action: "OPEN_LEGS" | "ADD_LOTS" | "PARTIAL_EXIT" | "FLIP_SIDE" | "SQUARE_OFF_ALL";
+            /**
              * Slice If Frozen
              * @default true
              */
             slice_if_frozen: boolean;
+            /** As Of */
+            as_of?: string | null;
             /** Legs */
             legs: components["schemas"]["OrderLegInstruction"][];
+        };
+        /** ClosedLegRecordSchema */
+        ClosedLegRecordSchema: {
+            /** Leg Id */
+            leg_id: string;
+            /** Contract Id */
+            contract_id: string;
+            /**
+             * Symbol
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /**
+             * Expiry
+             * Format: date
+             */
+            expiry: string;
+            /** Strike */
+            strike?: number | null;
+            /**
+             * Option Type
+             * @enum {string}
+             */
+            option_type: "CE" | "PE" | "FUT";
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "BUY" | "SELL";
+            /** Lots Closed */
+            lots_closed: number;
+            /** Lot Size */
+            lot_size: number;
+            /** Entry Price */
+            entry_price: number;
+            /** Exit Price */
+            exit_price: number;
+            /** Realized Pnl */
+            realized_pnl: number;
+            /**
+             * Closed At
+             * Format: date-time
+             */
+            closed_at: string;
         };
         /** ExecutionResultSchema */
         ExecutionResultSchema: {
@@ -169,6 +289,16 @@ export interface components {
              * @enum {string}
              */
             trading_mode: "SIMULATOR" | "PAPER" | "SANDBOX" | "LIVE";
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "OPEN_LEGS" | "ADD_LOTS" | "PARTIAL_EXIT" | "FLIP_SIDE" | "SQUARE_OFF_ALL";
+            /**
+             * Realized Pnl Delta
+             * @default 0.00
+             */
+            realized_pnl_delta: string;
             /** Fills */
             fills: components["schemas"]["OrderFillSchema"][];
         };
@@ -387,6 +517,55 @@ export interface components {
             /** Rows */
             rows: components["schemas"]["OptionChainRowSchema"][];
         };
+        /** OrderAuditLogSchema */
+        OrderAuditLogSchema: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Strategy Id */
+            strategy_id?: string | null;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Parent Order Id */
+            parent_order_id?: string | null;
+            /** Slice Index */
+            slice_index: number;
+            /** Total Slices */
+            total_slices: number;
+            /** Trading Mode */
+            trading_mode: string;
+            /** Contract Id */
+            contract_id: string;
+            /** Side */
+            side: string;
+            /** Action */
+            action: string;
+            /** Lots */
+            lots: number;
+            /** Quantity */
+            quantity: number;
+            /** Limit Price */
+            limit_price?: string | null;
+            /** Fill Price */
+            fill_price?: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Executed At
+             * Format: date-time
+             */
+            executed_at: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** OrderFillSchema */
         OrderFillSchema: {
             /**
@@ -400,6 +579,11 @@ export interface components {
             slice_index: number;
             /** Total Slices */
             total_slices: number;
+            /**
+             * Is Parent
+             * @default false
+             */
+            is_parent: boolean;
             /** Contract Id */
             contract_id: string;
             /**
@@ -407,6 +591,8 @@ export interface components {
              * @enum {string}
              */
             side: "BUY" | "SELL";
+            /** Action */
+            action: string;
             /** Lots */
             lots: number;
             /** Quantity */
@@ -426,6 +612,8 @@ export interface components {
         };
         /** OrderLegInstruction */
         OrderLegInstruction: {
+            /** Leg Id */
+            leg_id?: string | null;
             /** Contract Id */
             contract_id: string;
             /**
@@ -433,18 +621,14 @@ export interface components {
              * @enum {string}
              */
             side: "BUY" | "SELL";
-            /**
-             * Action
-             * @default OPEN
-             * @enum {string}
-             */
-            action: "OPEN" | "PARTIAL_EXIT" | "CLOSE" | "FLIP";
             /** Lots */
             lots: number;
             /** Lot Size */
-            lot_size: number;
+            lot_size?: number | null;
             /** Limit Price */
             limit_price?: number | string | null;
+            /** Entry Price */
+            entry_price?: number | string | null;
         };
         /** PayoffEvaluateRequest */
         PayoffEvaluateRequest: {
@@ -523,6 +707,102 @@ export interface components {
             /** Target Pnl */
             target_pnl: number;
         };
+        /** QuoteBatchRequest */
+        QuoteBatchRequest: {
+            /** Contract Ids */
+            contract_ids: string[];
+            /** As Of */
+            as_of?: string | null;
+        };
+        /** QuoteBatchResponse */
+        QuoteBatchResponse: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Quotes */
+            quotes: {
+                [key: string]: components["schemas"]["LegQuoteSchema"];
+            };
+        };
+        /** SimulatorStepRequest */
+        SimulatorStepRequest: {
+            /**
+             * Symbol
+             * @default NIFTY
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /**
+             * Current As Of
+             * Format: date-time
+             */
+            current_as_of: string;
+            /**
+             * Step
+             * @enum {string}
+             */
+            step: "-1d" | "-30m" | "-15m" | "-5m" | "-1m" | "+1m" | "+5m" | "+15m" | "+30m" | "+1d";
+            /** Chain Expiry */
+            chain_expiry?: string | null;
+            /** Active Contracts */
+            active_contracts?: string[];
+        };
+        /** SimulatorStepResponse */
+        SimulatorStepResponse: {
+            /**
+             * Symbol
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /**
+             * Previous As Of
+             * Format: date-time
+             */
+            previous_as_of: string;
+            /**
+             * New As Of
+             * Format: date-time
+             */
+            new_as_of: string;
+            chain: components["schemas"]["OptionChainSnapshotSchema"];
+            /** Leg Quotes */
+            leg_quotes: {
+                [key: string]: components["schemas"]["LegQuoteSchema"];
+            };
+        };
+        /** StrategyCreateRequest */
+        StrategyCreateRequest: {
+            /** Name */
+            name: string;
+            /**
+             * Symbol
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /**
+             * Mode
+             * @default builder
+             * @enum {string}
+             */
+            mode: "builder" | "simulator" | "paper" | "live";
+            /** Legs */
+            legs?: components["schemas"]["StrategyLegSchema"][];
+            /** Closed Legs */
+            closed_legs?: components["schemas"]["ClosedLegRecordSchema"][];
+            /**
+             * Realized Pnl
+             * @default 0.00
+             */
+            realized_pnl: number | string;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
+            /** Notes */
+            notes?: string | null;
+        };
         /** StrategyLegSchema */
         StrategyLegSchema: {
             /** Leg Id */
@@ -597,8 +877,14 @@ export interface components {
             mode: string;
             /** Legs */
             legs: components["schemas"]["StrategyLegSchema"][];
+            /** Closed Legs */
+            closed_legs: components["schemas"]["ClosedLegRecordSchema"][];
             /** Realized Pnl */
             realized_pnl: string;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
             /** Notes */
             notes?: string | null;
             /**
@@ -611,6 +897,27 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** StrategyUpdateRequest */
+        StrategyUpdateRequest: {
+            /** Name */
+            name?: string | null;
+            /** Symbol */
+            symbol?: ("NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX") | null;
+            /** Mode */
+            mode?: ("builder" | "simulator" | "paper" | "live") | null;
+            /** Legs */
+            legs?: components["schemas"]["StrategyLegSchema"][] | null;
+            /** Closed Legs */
+            closed_legs?: components["schemas"]["ClosedLegRecordSchema"][] | null;
+            /** Realized Pnl */
+            realized_pnl?: number | string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Notes */
+            notes?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -639,6 +946,183 @@ export interface components {
              * @default 0
              */
             iv_shift_pct: number;
+        };
+        /** WsSubscribeMessage */
+        WsSubscribeMessage: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "subscribe" | "unsubscribe" | "ping";
+            /**
+             * Symbol
+             * @default NIFTY
+             * @enum {string}
+             */
+            symbol: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+            /**
+             * Chain Expiry
+             * @default null
+             */
+            chain_expiry: string | null;
+            /** Active Contracts */
+            active_contracts?: string[];
+        };
+        /** WsTickFrameSchema */
+        WsTickFrameSchema: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "tick" | "pong" | "error";
+            /**
+             * Symbol
+             * @default null
+             */
+            symbol: ("NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX") | null;
+            /**
+             * Chain Expiry
+             * @default null
+             */
+            chain_expiry: string | null;
+            /**
+             * As Of
+             * @default null
+             */
+            as_of: string | null;
+            /**
+             * Spot
+             * @default null
+             */
+            spot: number | null;
+            /**
+             * Futures Price
+             * @default null
+             */
+            futures_price: number | null;
+            /**
+             * Forward Price
+             * @default null
+             */
+            forward_price: number | null;
+            /**
+             * India Vix
+             * @default null
+             */
+            india_vix: number | null;
+            /**
+             * Atm Strike
+             * @default null
+             */
+            atm_strike: number | null;
+            /** Chain Deltas */
+            chain_deltas?: components["schemas"]["OptionChainRowSchema"][];
+            /** Leg Quotes */
+            leg_quotes?: {
+                [key: string]: components["schemas"]["LegQuoteSchema"];
+            };
+            /**
+             * Message
+             * @default null
+             */
+            message: string | null;
+            $defs: {
+                /**
+                 * LegQuoteSchema
+                 * @description Live/simulated quote for any active leg contract (supports multi-expiry activeLegQuotes).
+                 */
+                LegQuoteSchema: {
+                    /** Contract Id */
+                    contract_id: string;
+                    /**
+                     * Expiry
+                     * Format: date
+                     */
+                    expiry: string;
+                    /**
+                     * Strike
+                     * @default null
+                     */
+                    strike: number | null;
+                    /**
+                     * Option Type
+                     * @enum {string}
+                     */
+                    option_type: "CE" | "PE" | "FUT";
+                    /** Ltp */
+                    ltp: number;
+                    /** Bid */
+                    bid: number;
+                    /** Ask */
+                    ask: number;
+                    /** Iv */
+                    iv: number;
+                    /** Delta */
+                    delta: number;
+                    /** Gamma */
+                    gamma: number;
+                    /** Theta */
+                    theta: number;
+                    /** Vega */
+                    vega: number;
+                    /** Forward Price */
+                    forward_price: number;
+                    /**
+                     * Updated At
+                     * Format: date-time
+                     */
+                    updated_at: string;
+                };
+                /** OptionChainRowSchema */
+                OptionChainRowSchema: {
+                    /** Strike */
+                    strike: number;
+                    /** Ce Contract Id */
+                    ce_contract_id: string;
+                    /** Pe Contract Id */
+                    pe_contract_id: string;
+                    /** Ce Ltp */
+                    ce_ltp: number;
+                    /** Ce Bid */
+                    ce_bid: number;
+                    /** Ce Ask */
+                    ce_ask: number;
+                    /** Ce Iv */
+                    ce_iv: number;
+                    /** Ce Delta */
+                    ce_delta: number;
+                    /** Ce Gamma */
+                    ce_gamma: number;
+                    /** Ce Theta */
+                    ce_theta: number;
+                    /** Ce Vega */
+                    ce_vega: number;
+                    /** Ce Oi */
+                    ce_oi: number;
+                    /** Ce Oi Change */
+                    ce_oi_change: number;
+                    /** Pe Ltp */
+                    pe_ltp: number;
+                    /** Pe Bid */
+                    pe_bid: number;
+                    /** Pe Ask */
+                    pe_ask: number;
+                    /** Pe Iv */
+                    pe_iv: number;
+                    /** Pe Delta */
+                    pe_delta: number;
+                    /** Pe Gamma */
+                    pe_gamma: number;
+                    /** Pe Theta */
+                    pe_theta: number;
+                    /** Pe Vega */
+                    pe_vega: number;
+                    /** Pe Oi */
+                    pe_oi: number;
+                    /** Pe Oi Change */
+                    pe_oi_change: number;
+                };
+            };
         };
     };
     responses: never;
@@ -702,6 +1186,39 @@ export interface operations {
             };
         };
     };
+    list_expiries_api_v1_market_expiries_get: {
+        parameters: {
+            query?: {
+                symbol?: "NIFTY" | "BANKNIFTY" | "FINNIFTY" | "SENSEX";
+                as_of?: string | null;
+                count?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpiryInfoSchema"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_option_chain_api_v1_market_chain_get: {
         parameters: {
             query?: {
@@ -722,6 +1239,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OptionChainSnapshotSchema"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_batch_quotes_api_v1_market_quotes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteBatchResponse"];
                 };
             };
             /** @description Validation Error */
@@ -768,32 +1318,12 @@ export interface operations {
             };
         };
     };
-    _quotes_schema_placeholder_api_v1_market_quotes_schema_get: {
+    execute_orders_api_v1_orders_execute_post: {
         parameters: {
             query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: components["schemas"]["LegQuoteSchema"];
-                    };
-                };
+            header: {
+                "X-Idempotency-Key": string;
             };
-        };
-    };
-    _orders_schema_placeholder_api_v1_orders_preview_schema_post: {
-        parameters: {
-            query?: never;
-            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -823,7 +1353,40 @@ export interface operations {
             };
         };
     };
-    list_strategies_placeholder_api_v1_strategies_get: {
+    list_orders_api_v1_orders_get: {
+        parameters: {
+            query?: {
+                strategy_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderAuditLogSchema"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_strategies_api_v1_strategies_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -839,6 +1402,167 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StrategyResponse"][];
+                };
+            };
+        };
+    };
+    create_strategy_api_v1_strategies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StrategyCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_strategy_api_v1_strategies__strategy_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_strategy_api_v1_strategies__strategy_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StrategyUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_strategy_api_v1_strategies__strategy_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    step_simulator_api_v1_simulator_step_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulatorStepRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulatorStepResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

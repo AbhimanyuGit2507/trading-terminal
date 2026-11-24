@@ -27,3 +27,4 @@ parity-check: backend-test frontend-test
 lint:
 	cd backend && uv run ruff check .
 	cd frontend && pnpm run typecheck
+

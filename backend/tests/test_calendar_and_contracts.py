@@ -97,3 +97,4 @@ def test_tick_rounding_and_0dte_time() -> None:
     assert time_to_expiry_years(datetime(2026, 11, 23, 15, 31, tzinfo=IST), exp_d) == 0.0
     t_mid = time_to_expiry_years(datetime(2026, 11, 23, 9, 15, tzinfo=IST), exp_d)
     assert 0.0 < t_mid < 1.0 / 365.0
+

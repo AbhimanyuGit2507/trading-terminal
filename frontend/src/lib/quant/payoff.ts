@@ -459,3 +459,4 @@ export function splitSeriesForECharts(points: PayoffCurvePoint[]): EChartsSplitS
 
   return { positiveExpiry, negativeExpiry, targetCurve };
 }
+

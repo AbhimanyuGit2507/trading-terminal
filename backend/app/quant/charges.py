@@ -62,3 +62,4 @@ def estimate_leg_charges(
         gst=round(gst, 2),
         total=round(total, 2),
     )
+

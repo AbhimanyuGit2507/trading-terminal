@@ -45,3 +45,4 @@ export function estimateLegCharges(
   const gst = GST_RATE * (brokerage + exch + sebiFee);
   return round2(brokerage + stt + exch + sebiFee + stamp + gst);
 }
+

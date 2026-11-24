@@ -99,3 +99,4 @@ def parse_contract_id(contract_id: str) -> ParsedContractId:
             strike=float(parts[3]),
         )
     raise ValueError(f"Unrecognized canonical contract_id format: {contract_id}")
+

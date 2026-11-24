@@ -27,9 +27,11 @@ class StrategyModel(Base):
     symbol: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
     mode: Mapped[str] = mapped_column(String(16), nullable=False, default="builder")
     legs_json: Mapped[list[dict]] = mapped_column(JSON_VARIANT, nullable=False, default=list)
+    closed_legs_json: Mapped[list[dict]] = mapped_column(JSON_VARIANT, nullable=False, default=list)
     realized_pnl: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=Decimal("0.00")
     )
+    metadata_json: Mapped[dict] = mapped_column(JSON_VARIANT, nullable=False, default=dict)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
