@@ -1,0 +1,1487 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "StockMock Indian F&O Terminal API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/instruments": {
+      "get": {
+        "summary": "List Instruments",
+        "operationId": "list_instruments_api_v1_market_instruments_get",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InstrumentSpecSchema"
+                  },
+                  "title": "Response List Instruments Api V1 Market Instruments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/chain": {
+      "get": {
+        "summary": "Get Option Chain",
+        "operationId": "get_option_chain_api_v1_market_chain_get",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "NIFTY",
+                "BANKNIFTY",
+                "FINNIFTY",
+                "SENSEX"
+              ],
+              "type": "string",
+              "default": "NIFTY",
+              "title": "Symbol"
+            }
+          },
+          {
+            "name": "expiry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expiry"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptionChainSnapshotSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/evaluate": {
+      "post": {
+        "summary": "Evaluate Strategy Payoff",
+        "operationId": "evaluate_strategy_payoff_api_v1_analytics_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayoffEvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoffEvaluateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/quotes-schema": {
+      "get": {
+        "summary": " Quotes Schema Placeholder",
+        "operationId": "_quotes_schema_placeholder_api_v1_market_quotes_schema_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/LegQuoteSchema"
+                  },
+                  "type": "object",
+                  "title": "Response  Quotes Schema Placeholder Api V1 Market Quotes Schema Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/preview-schema": {
+      "post": {
+        "summary": " Orders Schema Placeholder",
+        "operationId": "_orders_schema_placeholder_api_v1_orders_preview_schema_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionResultSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/strategies": {
+      "get": {
+        "summary": "List Strategies Placeholder",
+        "operationId": "list_strategies_placeholder_api_v1_strategies_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StrategyResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Strategies Placeholder Api V1 Strategies Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatchOrderRequest": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Idempotency Key"
+          },
+          "strategy_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy Id"
+          },
+          "parent_order_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Order Id"
+          },
+          "trading_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATOR",
+              "PAPER",
+              "SANDBOX",
+              "LIVE"
+            ],
+            "title": "Trading Mode",
+            "default": "SIMULATOR"
+          },
+          "slice_if_frozen": {
+            "type": "boolean",
+            "title": "Slice If Frozen",
+            "default": true
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/OrderLegInstruction"
+            },
+            "type": "array",
+            "title": "Legs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "legs"
+        ],
+        "title": "BatchOrderRequest"
+      },
+      "ExecutionResultSchema": {
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Idempotency Key"
+          },
+          "deduplicated": {
+            "type": "boolean",
+            "title": "Deduplicated",
+            "default": false
+          },
+          "trading_mode": {
+            "type": "string",
+            "enum": [
+              "SIMULATOR",
+              "PAPER",
+              "SANDBOX",
+              "LIVE"
+            ],
+            "title": "Trading Mode"
+          },
+          "fills": {
+            "items": {
+              "$ref": "#/components/schemas/OrderFillSchema"
+            },
+            "type": "array",
+            "title": "Fills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "idempotency_key",
+          "trading_mode",
+          "fills"
+        ],
+        "title": "ExecutionResultSchema"
+      },
+      "ExpiryInfoSchema": {
+        "properties": {
+          "expiry_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiry Date"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "is_weekly": {
+            "type": "boolean",
+            "title": "Is Weekly"
+          },
+          "is_monthly": {
+            "type": "boolean",
+            "title": "Is Monthly"
+          },
+          "dte": {
+            "type": "integer",
+            "title": "Dte"
+          },
+          "lot_size": {
+            "type": "integer",
+            "title": "Lot Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expiry_date",
+          "label",
+          "is_weekly",
+          "is_monthly",
+          "dte",
+          "lot_size"
+        ],
+        "title": "ExpiryInfoSchema"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InstrumentSpecSchema": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "exchange": {
+            "type": "string",
+            "enum": [
+              "NSE_FNO",
+              "BSE_FNO"
+            ],
+            "title": "Exchange"
+          },
+          "lot_size": {
+            "type": "integer",
+            "title": "Lot Size"
+          },
+          "strike_step": {
+            "type": "integer",
+            "title": "Strike Step"
+          },
+          "tick_size": {
+            "type": "number",
+            "title": "Tick Size"
+          },
+          "freeze_qty": {
+            "type": "integer",
+            "title": "Freeze Qty"
+          },
+          "has_weekly": {
+            "type": "boolean",
+            "title": "Has Weekly"
+          },
+          "expiry_weekday": {
+            "type": "integer",
+            "title": "Expiry Weekday"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Effective From"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "exchange",
+          "lot_size",
+          "strike_step",
+          "tick_size",
+          "freeze_qty",
+          "has_weekly",
+          "expiry_weekday",
+          "effective_from"
+        ],
+        "title": "InstrumentSpecSchema"
+      },
+      "LegQuoteSchema": {
+        "properties": {
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiry"
+          },
+          "strike": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strike"
+          },
+          "option_type": {
+            "type": "string",
+            "enum": [
+              "CE",
+              "PE",
+              "FUT"
+            ],
+            "title": "Option Type"
+          },
+          "ltp": {
+            "type": "number",
+            "title": "Ltp"
+          },
+          "bid": {
+            "type": "number",
+            "title": "Bid"
+          },
+          "ask": {
+            "type": "number",
+            "title": "Ask"
+          },
+          "iv": {
+            "type": "number",
+            "title": "Iv"
+          },
+          "delta": {
+            "type": "number",
+            "title": "Delta"
+          },
+          "gamma": {
+            "type": "number",
+            "title": "Gamma"
+          },
+          "theta": {
+            "type": "number",
+            "title": "Theta"
+          },
+          "vega": {
+            "type": "number",
+            "title": "Vega"
+          },
+          "forward_price": {
+            "type": "number",
+            "title": "Forward Price"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract_id",
+          "expiry",
+          "option_type",
+          "ltp",
+          "bid",
+          "ask",
+          "iv",
+          "delta",
+          "gamma",
+          "theta",
+          "vega",
+          "forward_price",
+          "updated_at"
+        ],
+        "title": "LegQuoteSchema",
+        "description": "Live/simulated quote for any active leg contract (supports multi-expiry activeLegQuotes)."
+      },
+      "MarginBreakdownSchema": {
+        "properties": {
+          "span_proxy": {
+            "type": "number",
+            "title": "Span Proxy"
+          },
+          "exposure_proxy": {
+            "type": "number",
+            "title": "Exposure Proxy"
+          },
+          "total_margin": {
+            "type": "number",
+            "title": "Total Margin"
+          },
+          "hedge_benefit": {
+            "type": "number",
+            "title": "Hedge Benefit"
+          },
+          "margin_source": {
+            "type": "string",
+            "title": "Margin Source",
+            "default": "estimated_stress"
+          }
+        },
+        "type": "object",
+        "required": [
+          "span_proxy",
+          "exposure_proxy",
+          "total_margin",
+          "hedge_benefit"
+        ],
+        "title": "MarginBreakdownSchema"
+      },
+      "NetGreeksSchema": {
+        "properties": {
+          "delta": {
+            "type": "number",
+            "title": "Delta"
+          },
+          "gamma": {
+            "type": "number",
+            "title": "Gamma"
+          },
+          "theta": {
+            "type": "number",
+            "title": "Theta"
+          },
+          "vega": {
+            "type": "number",
+            "title": "Vega"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delta",
+          "gamma",
+          "theta",
+          "vega"
+        ],
+        "title": "NetGreeksSchema"
+      },
+      "OptionChainRowSchema": {
+        "properties": {
+          "strike": {
+            "type": "number",
+            "title": "Strike"
+          },
+          "ce_contract_id": {
+            "type": "string",
+            "title": "Ce Contract Id"
+          },
+          "pe_contract_id": {
+            "type": "string",
+            "title": "Pe Contract Id"
+          },
+          "ce_ltp": {
+            "type": "number",
+            "title": "Ce Ltp"
+          },
+          "ce_bid": {
+            "type": "number",
+            "title": "Ce Bid"
+          },
+          "ce_ask": {
+            "type": "number",
+            "title": "Ce Ask"
+          },
+          "ce_iv": {
+            "type": "number",
+            "title": "Ce Iv"
+          },
+          "ce_delta": {
+            "type": "number",
+            "title": "Ce Delta"
+          },
+          "ce_gamma": {
+            "type": "number",
+            "title": "Ce Gamma"
+          },
+          "ce_theta": {
+            "type": "number",
+            "title": "Ce Theta"
+          },
+          "ce_vega": {
+            "type": "number",
+            "title": "Ce Vega"
+          },
+          "ce_oi": {
+            "type": "integer",
+            "title": "Ce Oi"
+          },
+          "ce_oi_change": {
+            "type": "integer",
+            "title": "Ce Oi Change"
+          },
+          "pe_ltp": {
+            "type": "number",
+            "title": "Pe Ltp"
+          },
+          "pe_bid": {
+            "type": "number",
+            "title": "Pe Bid"
+          },
+          "pe_ask": {
+            "type": "number",
+            "title": "Pe Ask"
+          },
+          "pe_iv": {
+            "type": "number",
+            "title": "Pe Iv"
+          },
+          "pe_delta": {
+            "type": "number",
+            "title": "Pe Delta"
+          },
+          "pe_gamma": {
+            "type": "number",
+            "title": "Pe Gamma"
+          },
+          "pe_theta": {
+            "type": "number",
+            "title": "Pe Theta"
+          },
+          "pe_vega": {
+            "type": "number",
+            "title": "Pe Vega"
+          },
+          "pe_oi": {
+            "type": "integer",
+            "title": "Pe Oi"
+          },
+          "pe_oi_change": {
+            "type": "integer",
+            "title": "Pe Oi Change"
+          }
+        },
+        "type": "object",
+        "required": [
+          "strike",
+          "ce_contract_id",
+          "pe_contract_id",
+          "ce_ltp",
+          "ce_bid",
+          "ce_ask",
+          "ce_iv",
+          "ce_delta",
+          "ce_gamma",
+          "ce_theta",
+          "ce_vega",
+          "ce_oi",
+          "ce_oi_change",
+          "pe_ltp",
+          "pe_bid",
+          "pe_ask",
+          "pe_iv",
+          "pe_delta",
+          "pe_gamma",
+          "pe_theta",
+          "pe_vega",
+          "pe_oi",
+          "pe_oi_change"
+        ],
+        "title": "OptionChainRowSchema"
+      },
+      "OptionChainSnapshotSchema": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "exchange": {
+            "type": "string",
+            "enum": [
+              "NSE_FNO",
+              "BSE_FNO"
+            ],
+            "title": "Exchange"
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiry"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "spot": {
+            "type": "number",
+            "title": "Spot"
+          },
+          "futures_price": {
+            "type": "number",
+            "title": "Futures Price"
+          },
+          "forward_price": {
+            "type": "number",
+            "title": "Forward Price"
+          },
+          "india_vix": {
+            "type": "number",
+            "title": "India Vix"
+          },
+          "atm_strike": {
+            "type": "number",
+            "title": "Atm Strike"
+          },
+          "lot_size": {
+            "type": "integer",
+            "title": "Lot Size"
+          },
+          "strike_step": {
+            "type": "integer",
+            "title": "Strike Step"
+          },
+          "futures_contract_id": {
+            "type": "string",
+            "title": "Futures Contract Id"
+          },
+          "expiries": {
+            "items": {
+              "$ref": "#/components/schemas/ExpiryInfoSchema"
+            },
+            "type": "array",
+            "title": "Expiries"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/OptionChainRowSchema"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "exchange",
+          "expiry",
+          "as_of",
+          "spot",
+          "futures_price",
+          "forward_price",
+          "india_vix",
+          "atm_strike",
+          "lot_size",
+          "strike_step",
+          "futures_contract_id",
+          "expiries",
+          "rows"
+        ],
+        "title": "OptionChainSnapshotSchema"
+      },
+      "OrderFillSchema": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "parent_order_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Order Id"
+          },
+          "slice_index": {
+            "type": "integer",
+            "title": "Slice Index"
+          },
+          "total_slices": {
+            "type": "integer",
+            "title": "Total Slices"
+          },
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "SELL"
+            ],
+            "title": "Side"
+          },
+          "lots": {
+            "type": "integer",
+            "title": "Lots"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "fill_price": {
+            "type": "string",
+            "title": "Fill Price"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "FILLED",
+              "REJECTED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "executed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Executed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "slice_index",
+          "total_slices",
+          "contract_id",
+          "side",
+          "lots",
+          "quantity",
+          "fill_price",
+          "status",
+          "executed_at"
+        ],
+        "title": "OrderFillSchema"
+      },
+      "OrderLegInstruction": {
+        "properties": {
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "SELL"
+            ],
+            "title": "Side"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "PARTIAL_EXIT",
+              "CLOSE",
+              "FLIP"
+            ],
+            "title": "Action",
+            "default": "OPEN"
+          },
+          "lots": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Lots"
+          },
+          "lot_size": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Lot Size"
+          },
+          "limit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract_id",
+          "side",
+          "lots",
+          "lot_size"
+        ],
+        "title": "OrderLegInstruction"
+      },
+      "PayoffEvaluateRequest": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "spot": {
+            "type": "number",
+            "title": "Spot"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyLegSchema"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "what_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WhatIfParamsSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "realized_pnl": {
+            "type": "number",
+            "title": "Realized Pnl",
+            "default": 0.0
+          },
+          "include_charges": {
+            "type": "boolean",
+            "title": "Include Charges",
+            "default": false
+          },
+          "atm_iv": {
+            "type": "number",
+            "title": "Atm Iv",
+            "default": 0.14
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "spot",
+          "as_of",
+          "legs"
+        ],
+        "title": "PayoffEvaluateRequest"
+      },
+      "PayoffEvaluateResponse": {
+        "properties": {
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PayoffPointSchema"
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "breakevens": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Breakevens"
+          },
+          "target_breakevens": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Target Breakevens"
+          },
+          "max_profit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Profit"
+          },
+          "max_loss": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss"
+          },
+          "max_profit_unlimited": {
+            "type": "boolean",
+            "title": "Max Profit Unlimited"
+          },
+          "max_loss_unlimited": {
+            "type": "boolean",
+            "title": "Max Loss Unlimited"
+          },
+          "risk_reward": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Reward"
+          },
+          "pop": {
+            "type": "number",
+            "title": "Pop"
+          },
+          "net_greeks": {
+            "$ref": "#/components/schemas/NetGreeksSchema"
+          },
+          "current_mtm_pnl": {
+            "type": "number",
+            "title": "Current Mtm Pnl"
+          },
+          "estimated_charges": {
+            "type": "number",
+            "title": "Estimated Charges"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/MarginBreakdownSchema"
+          },
+          "sd_1_low": {
+            "type": "number",
+            "title": "Sd 1 Low"
+          },
+          "sd_1_high": {
+            "type": "number",
+            "title": "Sd 1 High"
+          },
+          "sd_2_low": {
+            "type": "number",
+            "title": "Sd 2 Low"
+          },
+          "sd_2_high": {
+            "type": "number",
+            "title": "Sd 2 High"
+          }
+        },
+        "type": "object",
+        "required": [
+          "points",
+          "breakevens",
+          "target_breakevens",
+          "max_profit",
+          "max_loss",
+          "max_profit_unlimited",
+          "max_loss_unlimited",
+          "risk_reward",
+          "pop",
+          "net_greeks",
+          "current_mtm_pnl",
+          "estimated_charges",
+          "margin",
+          "sd_1_low",
+          "sd_1_high",
+          "sd_2_low",
+          "sd_2_high"
+        ],
+        "title": "PayoffEvaluateResponse"
+      },
+      "PayoffPointSchema": {
+        "properties": {
+          "spot": {
+            "type": "number",
+            "title": "Spot"
+          },
+          "expiry_pnl": {
+            "type": "number",
+            "title": "Expiry Pnl"
+          },
+          "target_pnl": {
+            "type": "number",
+            "title": "Target Pnl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "spot",
+          "expiry_pnl",
+          "target_pnl"
+        ],
+        "title": "PayoffPointSchema"
+      },
+      "StrategyLegSchema": {
+        "properties": {
+          "leg_id": {
+            "type": "string",
+            "title": "Leg Id"
+          },
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "exchange": {
+            "type": "string",
+            "enum": [
+              "NSE_FNO",
+              "BSE_FNO"
+            ],
+            "title": "Exchange",
+            "default": "NSE_FNO"
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiry"
+          },
+          "strike": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strike"
+          },
+          "option_type": {
+            "type": "string",
+            "enum": [
+              "CE",
+              "PE",
+              "FUT"
+            ],
+            "title": "Option Type"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "SELL"
+            ],
+            "title": "Side"
+          },
+          "lots": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Lots"
+          },
+          "lot_size": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Lot Size"
+          },
+          "entry_price": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Entry Price"
+          },
+          "entry_iv": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Entry Iv"
+          },
+          "forward_at_base": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forward At Base"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLOSED"
+            ],
+            "title": "Status",
+            "default": "OPEN"
+          }
+        },
+        "type": "object",
+        "required": [
+          "leg_id",
+          "contract_id",
+          "symbol",
+          "expiry",
+          "option_type",
+          "side",
+          "lots",
+          "lot_size",
+          "entry_price",
+          "entry_iv"
+        ],
+        "title": "StrategyLegSchema"
+      },
+      "StrategyResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "symbol": {
+            "type": "string",
+            "enum": [
+              "NIFTY",
+              "BANKNIFTY",
+              "FINNIFTY",
+              "SENSEX"
+            ],
+            "title": "Symbol"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyLegSchema"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "realized_pnl": {
+            "type": "string",
+            "title": "Realized Pnl"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "symbol",
+          "mode",
+          "legs",
+          "realized_pnl",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "StrategyResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WhatIfParamsSchema": {
+        "properties": {
+          "target_spot": {
+            "type": "number",
+            "title": "Target Spot"
+          },
+          "target_datetime": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Datetime"
+          },
+          "iv_shift_pct": {
+            "type": "number",
+            "title": "Iv Shift Pct",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_spot",
+          "target_datetime"
+        ],
+        "title": "WhatIfParamsSchema"
+      }
+    }
+  }
+}

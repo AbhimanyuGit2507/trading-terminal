@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+.pnpm-store/
+*.tsbuildinfo
+
+# Env & Local Secrets
+.env
+.env.local
+.env.*.local
+
+# Data & Local Artifacts
+data/parquet/*.parquet
+*.duckdb
+*.sqlite3
+*.db
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/

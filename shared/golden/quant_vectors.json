@@ -1,0 +1,657 @@
+{
+  "black76": [
+    {
+      "forward": 24410.5,
+      "strike": 24400.0,
+      "t_years": 0.019178082191780823,
+      "sigma": 0.142,
+      "option_type": "CE",
+      "expected": {
+        "price": 196.75546926604693,
+        "delta": 0.5126486626443023,
+        "gamma": 0.0008306615355452449,
+        "theta": -13.67197575405926,
+        "vega": 13.47941271526969
+      }
+    },
+    {
+      "forward": 24410.5,
+      "strike": 24400.0,
+      "t_years": 0.019178082191780823,
+      "sigma": 0.142,
+      "option_type": "PE",
+      "expected": {
+        "price": 186.25546926604693,
+        "delta": -0.4873513373556977,
+        "gamma": 0.0008306615355452449,
+        "theta": -13.67197575405926,
+        "vega": 13.47941271526969
+      }
+    },
+    {
+      "forward": 52300.0,
+      "strike": 51000.0,
+      "t_years": 0.0684931506849315,
+      "sigma": 0.195,
+      "option_type": "CE",
+      "expected": {
+        "price": 1826.7806464063615,
+        "delta": 0.6980267413907678,
+        "gamma": 0.00013065295090313435,
+        "theta": -18.615253870730964,
+        "vega": 47.73142018136143
+      }
+    },
+    {
+      "forward": 52300.0,
+      "strike": 53500.0,
+      "t_years": 0.0684931506849315,
+      "sigma": 0.175,
+      "option_type": "PE",
+      "expected": {
+        "price": 1682.6363626535822,
+        "delta": -0.6816852192049397,
+        "gamma": 0.00014896506133465888,
+        "theta": -17.093895109833795,
+        "vega": 48.839700313810845
+      }
+    },
+    {
+      "forward": 24350.0,
+      "strike": 24350.0,
+      "t_years": 0.0001,
+      "sigma": 0.18,
+      "option_type": "CE",
+      "expected": {
+        "price": 17.485637789433895,
+        "delta": 0.5003590480038899,
+        "gamma": 0.009102033283820258,
+        "theta": -239.52922011386258,
+        "vega": 0.9714240593506649
+      }
+    },
+    {
+      "forward": 24350.0,
+      "strike": 24200.0,
+      "t_years": 0.0,
+      "sigma": 0.15,
+      "option_type": "CE",
+      "expected": {
+        "price": 150.0,
+        "delta": 1.0,
+        "gamma": 0.0,
+        "theta": 0.0,
+        "vega": 0.0
+      }
+    },
+    {
+      "forward": 24350.0,
+      "strike": 24200.0,
+      "t_years": 0.0,
+      "sigma": 0.15,
+      "option_type": "PE",
+      "expected": {
+        "price": 0.0,
+        "delta": 0.0,
+        "gamma": 0.0,
+        "theta": 0.0,
+        "vega": 0.0
+      }
+    },
+    {
+      "forward": 80180.0,
+      "strike": 82000.0,
+      "t_years": 0.1643835616438356,
+      "sigma": 0.22,
+      "option_type": "CE",
+      "expected": {
+        "price": 2065.3804545813255,
+        "delta": 0.41799087781590416,
+        "gamma": 5.459895904245626e-05,
+        "theta": -23.272281854634684,
+        "vega": 126.93971920709828
+      }
+    }
+  ],
+  "payoff": [
+    {
+      "name": "nifty_short_straddle",
+      "spot": 24350.0,
+      "base_dt": "2026-11-18T10:30:00+05:30",
+      "target_spot": 24350.0,
+      "target_dt": "2026-11-18T10:30:00+05:30",
+      "iv_shift_pct": 0.0,
+      "realized_pnl": 0.0,
+      "include_charges": false,
+      "atm_iv": 0.14,
+      "legs": [
+        {
+          "leg_id": "l1",
+          "symbol": "NIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "CE",
+          "side": "SELL",
+          "lots": 2,
+          "lot_size": 65,
+          "entry_price": 165.5,
+          "entry_iv": 0.14,
+          "strike": 24350.0,
+          "forward_at_base": 24372.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        },
+        {
+          "leg_id": "l2",
+          "symbol": "NIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "PE",
+          "side": "SELL",
+          "lots": 2,
+          "lot_size": 65,
+          "entry_price": 148.0,
+          "entry_iv": 0.145,
+          "strike": 24350.0,
+          "forward_at_base": 24372.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        }
+      ],
+      "expected": {
+        "breakevens": [
+          24036.5,
+          24663.5
+        ],
+        "target_breakevens": [],
+        "max_profit": 40755.0,
+        "max_loss": null,
+        "max_profit_unlimited": false,
+        "max_loss_unlimited": true,
+        "risk_reward": null,
+        "pop": 55.06,
+        "net_greeks": {
+          "delta": -6.38,
+          "gamma": -0.2496,
+          "theta": 4123.26,
+          "vega": -3014.07
+        },
+        "current_mtm_pnl": -2317.68,
+        "estimated_charges": 0.0,
+        "sd_1_low": 23935.51,
+        "sd_1_high": 24764.49,
+        "sample_points": [
+          {
+            "spot": 22402.0,
+            "expiry_pnl": -212485.0,
+            "target_pnl": -209625.01
+          },
+          {
+            "spot": 22791.6,
+            "expiry_pnl": -161837.0,
+            "target_pnl": -158978.63
+          },
+          {
+            "spot": 23181.2,
+            "expiry_pnl": -111189.0,
+            "target_pnl": -108401.32
+          },
+          {
+            "spot": 23570.8,
+            "expiry_pnl": -60541.0,
+            "target_pnl": -58999.18
+          },
+          {
+            "spot": 23960.4,
+            "expiry_pnl": -9893.0,
+            "target_pnl": -17903.52
+          },
+          {
+            "spot": 24350.0,
+            "expiry_pnl": 40755.0,
+            "target_pnl": -2317.68
+          },
+          {
+            "spot": 24739.6,
+            "expiry_pnl": -9893.0,
+            "target_pnl": -22077.59
+          },
+          {
+            "spot": 25129.2,
+            "expiry_pnl": -60541.0,
+            "target_pnl": -64609.9
+          },
+          {
+            "spot": 25518.8,
+            "expiry_pnl": -111189.0,
+            "target_pnl": -114132.68
+          },
+          {
+            "spot": 25908.4,
+            "expiry_pnl": -161837.0,
+            "target_pnl": -164700.05
+          },
+          {
+            "spot": 26298.0,
+            "expiry_pnl": -212485.0,
+            "target_pnl": -215345.06
+          }
+        ]
+      }
+    },
+    {
+      "name": "nifty_iron_condor_what_if",
+      "spot": 24350.0,
+      "base_dt": "2026-11-18T10:30:00+05:30",
+      "target_spot": 24500.0,
+      "target_dt": "2026-11-20T14:00:00+05:30",
+      "iv_shift_pct": -2.0,
+      "realized_pnl": 1850.0,
+      "include_charges": true,
+      "atm_iv": 0.14,
+      "legs": [
+        {
+          "leg_id": "c1",
+          "symbol": "NIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "CE",
+          "side": "SELL",
+          "lots": 1,
+          "lot_size": 65,
+          "entry_price": 92.0,
+          "entry_iv": 0.138,
+          "strike": 24500.0,
+          "forward_at_base": 24372.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        },
+        {
+          "leg_id": "c2",
+          "symbol": "NIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "CE",
+          "side": "BUY",
+          "lots": 1,
+          "lot_size": 65,
+          "entry_price": 34.0,
+          "entry_iv": 0.142,
+          "strike": 24700.0,
+          "forward_at_base": 24372.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        },
+        {
+          "leg_id": "p1",
+          "symbol": "NIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "PE",
+          "side": "SELL",
+          "lots": 1,
+          "lot_size": 65,
+          "entry_price": 88.0,
+          "entry_iv": 0.146,
+          "strike": 24200.0,
+          "forward_at_base": 24372.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        },
+        {
+          "leg_id": "p2",
+          "symbol": "NIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "PE",
+          "side": "BUY",
+          "lots": 1,
+          "lot_size": 65,
+          "entry_price": 31.0,
+          "entry_iv": 0.155,
+          "strike": 24000.0,
+          "forward_at_base": 24372.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        }
+      ],
+      "expected": {
+        "breakevens": [
+          24058.27,
+          24641.73
+        ],
+        "target_breakevens": [
+          23905.34,
+          24744.67
+        ],
+        "max_profit": 9212.17,
+        "max_loss": -3787.83,
+        "max_profit_unlimited": false,
+        "max_loss_unlimited": false,
+        "risk_reward": 2.43,
+        "pop": 51.01,
+        "net_greeks": {
+          "delta": -11.91,
+          "gamma": -0.0517,
+          "theta": 542.61,
+          "vega": -295.5
+        },
+        "current_mtm_pnl": 3681.42,
+        "estimated_charges": 112.83,
+        "sd_1_low": 23927.51,
+        "sd_1_high": 24772.49,
+        "sample_points": [
+          {
+            "spot": 22052.0,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3787.83
+          },
+          {
+            "spot": 22511.6,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3787.83
+          },
+          {
+            "spot": 22971.2,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3786.73
+          },
+          {
+            "spot": 23430.8,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3591.19
+          },
+          {
+            "spot": 23890.4,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -217.52
+          },
+          {
+            "spot": 24313.23,
+            "expiry_pnl": 9212.17,
+            "target_pnl": 4760.24
+          },
+          {
+            "spot": 24736.06,
+            "expiry_pnl": -3787.83,
+            "target_pnl": 129.65
+          },
+          {
+            "spot": 25195.66,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3567.64
+          },
+          {
+            "spot": 25655.26,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3786.51
+          },
+          {
+            "spot": 26114.86,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3787.83
+          },
+          {
+            "spot": 26574.46,
+            "expiry_pnl": -3787.83,
+            "target_pnl": -3787.83
+          }
+        ]
+      }
+    },
+    {
+      "name": "calendar_spread_multi_expiry",
+      "spot": 24350.0,
+      "base_dt": "2026-11-18T10:30:00+05:30",
+      "target_spot": 24420.0,
+      "target_dt": "2026-11-21T11:00:00+05:30",
+      "iv_shift_pct": 1.5,
+      "realized_pnl": 0.0,
+      "include_charges": false,
+      "atm_iv": 0.14,
+      "legs": [
+        {
+          "leg_id": "near",
+          "symbol": "NIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "CE",
+          "side": "SELL",
+          "lots": 1,
+          "lot_size": 65,
+          "entry_price": 165.0,
+          "entry_iv": 0.14,
+          "strike": 24350.0,
+          "forward_at_base": 24372.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        },
+        {
+          "leg_id": "far",
+          "symbol": "NIFTY",
+          "expiry": "2026-12-29",
+          "option_type": "CE",
+          "side": "BUY",
+          "lots": 1,
+          "lot_size": 65,
+          "entry_price": 420.0,
+          "entry_iv": 0.148,
+          "strike": 24350.0,
+          "forward_at_base": 24510.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        }
+      ],
+      "expected": {
+        "breakevens": [
+          23630.76,
+          25434.06
+        ],
+        "target_breakevens": [
+          23583.22,
+          25480.44
+        ],
+        "max_profit": 20582.61,
+        "max_loss": -16575.0,
+        "max_profit_unlimited": false,
+        "max_loss_unlimited": false,
+        "risk_reward": 1.24,
+        "pop": 95.3,
+        "net_greeks": {
+          "delta": -2.05,
+          "gamma": -0.0655,
+          "theta": 1240.72,
+          "vega": 1549.65
+        },
+        "current_mtm_pnl": 13991.85,
+        "estimated_charges": 0.0,
+        "sd_1_low": 23931.14,
+        "sd_1_high": 24768.86,
+        "sample_points": [
+          {
+            "spot": 20340.95,
+            "expiry_pnl": -16568.05,
+            "target_pnl": -16564.27
+          },
+          {
+            "spot": 21142.76,
+            "expiry_pnl": -16474.37,
+            "target_pnl": -16439.65
+          },
+          {
+            "spot": 21944.57,
+            "expiry_pnl": -15739.41,
+            "target_pnl": -15563.08
+          },
+          {
+            "spot": 22746.38,
+            "expiry_pnl": -12268.94,
+            "target_pnl": -11739.37
+          },
+          {
+            "spot": 23548.19,
+            "expiry_pnl": -1698.74,
+            "target_pnl": -714.69
+          },
+          {
+            "spot": 24350.0,
+            "expiry_pnl": 20582.61,
+            "target_pnl": 13970.92
+          },
+          {
+            "spot": 25151.81,
+            "expiry_pnl": 3506.09,
+            "target_pnl": 4068.82
+          },
+          {
+            "spot": 25953.62,
+            "expiry_pnl": -4066.25,
+            "target_pnl": -3751.52
+          },
+          {
+            "spot": 26755.43,
+            "expiry_pnl": -6646.43,
+            "target_pnl": -6547.3
+          },
+          {
+            "spot": 27557.24,
+            "expiry_pnl": -7324.68,
+            "target_pnl": -7329.11
+          },
+          {
+            "spot": 28359.05,
+            "expiry_pnl": -7463.68,
+            "target_pnl": -7502.22
+          }
+        ]
+      }
+    },
+    {
+      "name": "protective_put_with_future",
+      "spot": 52240.0,
+      "base_dt": "2026-11-18T10:30:00+05:30",
+      "target_spot": 51900.0,
+      "target_dt": "2026-11-18T10:30:00+05:30",
+      "iv_shift_pct": 0.0,
+      "realized_pnl": -500.0,
+      "include_charges": false,
+      "atm_iv": 0.16,
+      "legs": [
+        {
+          "leg_id": "f1",
+          "symbol": "BANKNIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "FUT",
+          "side": "BUY",
+          "lots": 1,
+          "lot_size": 30,
+          "entry_price": 52300.0,
+          "entry_iv": 0.0,
+          "strike": null,
+          "forward_at_base": 52300.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        },
+        {
+          "leg_id": "p1",
+          "symbol": "BANKNIFTY",
+          "expiry": "2026-11-23",
+          "option_type": "PE",
+          "side": "BUY",
+          "lots": 1,
+          "lot_size": 30,
+          "entry_price": 310.0,
+          "entry_iv": 0.16,
+          "strike": 52000.0,
+          "forward_at_base": 52300.0,
+          "enabled": true,
+          "status": "OPEN",
+          "exchange": "NSE_FNO"
+        }
+      ],
+      "expected": {
+        "breakevens": [
+          52626.67
+        ],
+        "target_breakevens": [
+          52335.51
+        ],
+        "max_profit": null,
+        "max_loss": -18800.0,
+        "max_profit_unlimited": true,
+        "max_loss_unlimited": false,
+        "risk_reward": null,
+        "pop": 21.87,
+        "net_greeks": {
+          "delta": 14.63,
+          "gamma": 0.012,
+          "theta": -1140.49,
+          "vega": 742.5
+        },
+        "current_mtm_pnl": -7500.31,
+        "estimated_charges": 0.0,
+        "sd_1_low": 51740.78,
+        "sd_1_high": 52739.22,
+        "sample_points": [
+          {
+            "spot": 47820.8,
+            "expiry_pnl": -18800.0,
+            "target_pnl": -18799.95
+          },
+          {
+            "spot": 48680.64,
+            "expiry_pnl": -18800.0,
+            "target_pnl": -18797.37
+          },
+          {
+            "spot": 49540.48,
+            "expiry_pnl": -18800.0,
+            "target_pnl": -18736.34
+          },
+          {
+            "spot": 50400.32,
+            "expiry_pnl": -18800.0,
+            "target_pnl": -18072.02
+          },
+          {
+            "spot": 51260.16,
+            "expiry_pnl": -18800.0,
+            "target_pnl": -14485.3
+          },
+          {
+            "spot": 52085.61,
+            "expiry_pnl": -16231.81,
+            "target_pnl": -4577.38
+          },
+          {
+            "spot": 52911.05,
+            "expiry_pnl": 8531.58,
+            "target_pnl": 12995.07
+          },
+          {
+            "spot": 53770.89,
+            "expiry_pnl": 34326.78,
+            "target_pnl": 36548.51
+          },
+          {
+            "spot": 54630.73,
+            "expiry_pnl": 60121.98,
+            "target_pnl": 61961.41
+          },
+          {
+            "spot": 55490.57,
+            "expiry_pnl": 85917.18,
+            "target_pnl": 87719.33
+          },
+          {
+            "spot": 56350.41,
+            "expiry_pnl": 111712.38,
+            "target_pnl": 113512.45
+          }
+        ]
+      }
+    }
+  ]
+}
