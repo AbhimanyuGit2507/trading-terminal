@@ -25,13 +25,11 @@ export function WhatIfControls() {
   const setWhatIf = useStrategyStore((s) => s.setWhatIf);
   const resetWhatIf = useStrategyStore((s) => s.resetWhatIf);
 
-  // Spot range: +/- 12% around live spot
   const spotMin = Math.max(100, Math.round(spot * 0.88));
   const spotMax = Math.round(spot * 1.12);
   const spotStep = Math.max(5, Math.round(strikeStep / 2));
   const clampedTargetSpot = Math.min(spotMax, Math.max(spotMin, whatIf.targetSpot || spot));
 
-  // Time range: base asOf -> nearest active leg expiry (or chain expiry) 15:30 IST
   const openExpiries = legs
     .filter((l) => l.enabled && l.status === "OPEN")
     .map((l) => l.expiry)
@@ -48,7 +46,6 @@ export function WhatIfControls() {
     Math.max(baseMs, Date.parse(whatIf.targetDatetimeIso) || baseMs)
   );
 
-  // Use 0..1000 integer steps for smooth date slider
   const totalSteps = 1000;
   const timeStepIdx =
     maxTimeMs > baseMs
@@ -58,15 +55,15 @@ export function WhatIfControls() {
   const spotPctMove = spot > 0 ? ((clampedTargetSpot - spot) / spot) * 100 : 0;
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-[#0d1422] p-3">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-[#0d1422]">
       <div className="mb-2.5 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
           What-If Simulation Sliders
         </span>
         <button
           type="button"
           onClick={() => resetWhatIf(spot, asOfIso)}
-          className="inline-flex items-center gap-1 rounded border border-slate-700 bg-slate-900 px-2 py-0.5 text-[11px] text-slate-300 hover:bg-slate-800"
+          className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <RotateCcw className="h-3 w-3" />
           <span>Reset</span>
@@ -77,14 +74,16 @@ export function WhatIfControls() {
         {/* Target Spot */}
         <div>
           <div className="flex items-center justify-between text-xs">
-            <label htmlFor="whatif-spot" className="text-slate-400">
+            <label htmlFor="whatif-spot" className="text-slate-600 dark:text-slate-400">
               Target Spot
             </label>
-            <span className="font-mono font-semibold text-slate-100 tabular-nums">
+            <span className="font-mono font-semibold text-slate-900 tabular-nums dark:text-slate-100">
               {clampedTargetSpot.toLocaleString("en-IN")}{" "}
               <span
                 className={`text-[11px] ${
-                  spotPctMove >= 0 ? "text-emerald-400" : "text-rose-400"
+                  spotPctMove >= 0
+                    ? "text-[#16A34A] dark:text-emerald-400"
+                    : "text-[#DC2626] dark:text-rose-400"
                 }`}
               >
                 ({spotPctMove >= 0 ? "+" : ""}
@@ -109,10 +108,10 @@ export function WhatIfControls() {
         {/* Target Date/Time */}
         <div>
           <div className="flex items-center justify-between text-xs">
-            <label htmlFor="whatif-time" className="text-slate-400">
+            <label htmlFor="whatif-time" className="text-slate-600 dark:text-slate-400">
               Target Date / Time
             </label>
-            <span className="font-mono text-[11px] font-medium text-sky-300 tabular-nums">
+            <span className="font-mono text-[11px] font-medium text-blue-700 tabular-nums dark:text-sky-300">
               {formatIstDateTime(new Date(currentTargetMs).toISOString())}
             </span>
           </div>
@@ -137,10 +136,10 @@ export function WhatIfControls() {
         {/* IV Shift % */}
         <div>
           <div className="flex items-center justify-between text-xs">
-            <label htmlFor="whatif-iv" className="text-slate-400">
+            <label htmlFor="whatif-iv" className="text-slate-600 dark:text-slate-400">
               IV Shift
             </label>
-            <span className="font-mono font-semibold text-amber-300 tabular-nums">
+            <span className="font-mono font-semibold text-amber-700 tabular-nums dark:text-amber-300">
               {whatIf.ivShiftPct >= 0 ? "+" : ""}
               {whatIf.ivShiftPct.toFixed(1)}%
             </span>
@@ -162,4 +161,3 @@ export function WhatIfControls() {
     </div>
   );
 }
-

@@ -1,3 +1,5 @@
+import { convertPnlByUnit, type PnlDisplayUnit } from "./quant/units";
+
 export function formatInr(value: number, decimals = 0): string {
   const abs = Math.abs(value);
   const formatted = new Intl.NumberFormat("en-IN", {
@@ -15,6 +17,23 @@ export function formatSignedInr(value: number, decimals = 2): string {
     maximumFractionDigits: decimals,
   }).format(Math.abs(value));
   return `${prefix}₹${formatted}`;
+}
+
+export function formatPnl(
+  inrValue: number,
+  unit: PnlDisplayUnit,
+  primaryLotSize: number,
+  options?: { signed?: boolean; decimals?: number }
+): string {
+  const signed = options?.signed ?? false;
+  if (unit === "POINTS") {
+    const pts = convertPnlByUnit(inrValue, "POINTS", primaryLotSize);
+    const dec = options?.decimals ?? 2;
+    const prefix = signed ? (pts > 0 ? "+" : pts < 0 ? "-" : "") : pts < 0 ? "-" : "";
+    return `${prefix}${Math.abs(pts).toFixed(dec)} pts`;
+  }
+  const dec = options?.decimals ?? 0;
+  return signed ? formatSignedInr(inrValue, dec) : formatInr(inrValue, dec);
 }
 
 export function formatCompactOi(oi: number): string {

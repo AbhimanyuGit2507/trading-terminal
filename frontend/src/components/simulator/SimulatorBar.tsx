@@ -1,8 +1,8 @@
 "use client";
 
 import { Clock, Pause, Play } from "lucide-react";
-import { formatIstDateTime } from "@/lib/format";
 import type { SimulatorStepSize } from "@/lib/api/types";
+import { formatIstDateTime } from "@/lib/format";
 import { useMarketStore } from "@/stores/marketStore";
 import { type PlaybackSpeed, useSimulatorStore } from "@/stores/simulatorStore";
 
@@ -42,15 +42,15 @@ export function SimulatorBar() {
   return (
     <section
       aria-label="Simulator Time-Travel Controls"
-      className="border-b border-violet-500/25 bg-violet-950/20 px-4 py-2"
+      className="border-b border-violet-200 bg-violet-50/80 px-4 py-2 dark:border-violet-500/25 dark:bg-violet-950/20"
     >
       <div className="mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="inline-flex items-center gap-1.5 rounded-md border border-violet-500/30 bg-violet-500/15 px-2.5 py-1 text-xs font-semibold text-violet-200">
-            <Clock className="h-3.5 w-3.5 text-violet-400" />
+          <div className="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-white px-2.5 py-1 text-xs font-semibold text-violet-800 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-200">
+            <Clock className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
             <span className="tabular-nums">{formatIstDateTime(displayIso)}</span>
           </div>
-          <span className="hidden lg:inline text-[11px] text-slate-400">
+          <span className="hidden text-[11px] text-slate-600 lg:inline dark:text-slate-400">
             Phase 1 Mock Replay Clock (Parquet 1-min ingestion wires in Phase 2)
           </span>
         </div>
@@ -65,10 +65,10 @@ export function SimulatorBar() {
                 type="button"
                 disabled={isStepping}
                 onClick={() => void stepTime(step)}
-                className={`rounded px-2 py-1 text-xs font-mono font-medium transition-colors disabled:opacity-50 ${
+                className={`rounded px-2 py-1 font-mono text-xs font-medium transition-colors disabled:opacity-50 ${
                   isForward
-                    ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
-                    : "border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
+                    ? "border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+                    : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`}
               >
                 {step}
@@ -96,7 +96,7 @@ export function SimulatorBar() {
             aria-label="AutoPlay step size"
             value={autoStepSize}
             onChange={(e) => setAutoStepSize(e.target.value as SimulatorStepSize)}
-            className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-200"
+            className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
           >
             {AUTO_STEPS.map((st) => (
               <option key={st} value={st}>
@@ -105,16 +105,16 @@ export function SimulatorBar() {
             ))}
           </select>
 
-          <div className="flex items-center rounded border border-slate-700 bg-slate-900 p-0.5">
+          <div className="flex items-center rounded border border-slate-300 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900">
             {SPEEDS.map((sp) => (
               <button
                 key={sp}
                 type="button"
                 onClick={() => setPlaybackSpeed(sp)}
-                className={`rounded px-1.5 py-0.5 text-[11px] font-mono ${
+                className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${
                   playbackSpeed === sp
                     ? "bg-violet-600 text-white"
-                    : "text-slate-400 hover:text-slate-200"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                 }`}
               >
                 {sp}x
@@ -126,4 +126,3 @@ export function SimulatorBar() {
     </section>
   );
 }
-

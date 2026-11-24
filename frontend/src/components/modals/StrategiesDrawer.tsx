@@ -70,10 +70,10 @@ export function StrategiesDrawer() {
         if (dialogRef.current) dialogRef.current.returnValue = "";
         if (activeDrawer === "strategies") setActiveDrawer(null);
       }}
-      className="m-auto w-full max-w-2xl rounded-xl border border-slate-700 bg-[#111827] p-5 text-slate-100 shadow-2xl"
+      className="m-auto w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-5 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#111827] dark:text-slate-100"
     >
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h1 id="saved-strategies-title" className="text-base font-semibold text-white">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+        <h1 id="saved-strategies-title" className="text-base font-semibold text-slate-900 dark:text-white">
           Saved Strategies (PostgreSQL)
         </h1>
         <button
@@ -81,17 +81,21 @@ export function StrategiesDrawer() {
           autoFocus
           aria-label="Close saved strategies"
           onClick={handleClose}
-          className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+          className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
 
       <div className="terminal-scroll mt-3 max-h-[420px] space-y-2 overflow-auto">
-        {loading && <p className="py-6 text-center text-xs text-slate-400">Loading strategies…</p>}
-        {error && <p className="py-4 text-center text-xs text-rose-400">{error}</p>}
+        {loading && (
+          <p className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+            Loading strategies…
+          </p>
+        )}
+        {error && <p className="py-4 text-center text-xs text-red-600 dark:text-rose-400">{error}</p>}
         {!loading && !error && items.length === 0 && (
-          <p className="py-8 text-center text-xs text-slate-400">
+          <p className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
             No saved strategies yet. Click Save in the Builder panel to persist one.
           </p>
         )}
@@ -99,25 +103,29 @@ export function StrategiesDrawer() {
         {items.map((strat) => (
           <div
             key={strat.id}
-            className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-[#0d1422] px-3 py-2.5 text-xs"
+            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs dark:border-slate-800 dark:bg-[#0d1422]"
           >
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-slate-100">{strat.name}</span>
-                <span className="rounded bg-blue-600/20 px-1.5 py-0.5 text-[10px] font-semibold text-blue-300">
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  {strat.name}
+                </span>
+                <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-600/20 dark:text-blue-300">
                   {strat.symbol}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
                   {strat.legs.length} open leg(s)
                 </span>
               </div>
-              <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-400 tabular-nums">
+              <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-500 tabular-nums dark:text-slate-400">
                 <span>Updated: {formatIstDateTime(strat.updated_at)}</span>
                 <span>
                   Realized:{" "}
                   <strong
                     className={
-                      Number(strat.realized_pnl) >= 0 ? "text-emerald-400" : "text-rose-400"
+                      Number(strat.realized_pnl) >= 0
+                        ? "text-[#16A34A] dark:text-emerald-400"
+                        : "text-[#DC2626] dark:text-rose-400"
                     }
                   >
                     {formatSignedInr(Number(strat.realized_pnl), 0)}
@@ -138,7 +146,7 @@ export function StrategiesDrawer() {
                 type="button"
                 aria-label={`Delete ${strat.name}`}
                 onClick={() => void handleDelete(strat.id)}
-                className="rounded-md border border-slate-700 p-1.5 text-slate-400 hover:bg-rose-600/20 hover:text-rose-400"
+                className="rounded-md border border-slate-300 p-1.5 text-slate-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-rose-600/20 dark:hover:text-rose-400"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

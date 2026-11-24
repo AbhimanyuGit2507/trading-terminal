@@ -23,6 +23,7 @@ export interface StrategyState {
   legs: StrategyLeg[];
   closedLegs: ClosedLegRecord[];
   realizedPnl: number;
+  lotMultiplier: number;
   margin: MarginBreakdown | null;
   isLoadingMargin: boolean;
   isExecuting: boolean;
@@ -30,6 +31,7 @@ export interface StrategyState {
   whatIf: WhatIfState;
 
   setStrategyName: (name: string) => void;
+  setLotMultiplier: (factor: number) => void;
   setMargin: (margin: MarginBreakdown | null) => void;
   setIsLoadingMargin: (loading: boolean) => void;
   setWhatIf: (patch: Partial<WhatIfState>) => void;
@@ -52,6 +54,12 @@ function round2(v: number): number {
   return Math.round(v * 100) / 100;
 }
 
+export function getEffectiveLegs(legs: StrategyLeg[], lotMultiplier: number): StrategyLeg[] {
+  const mult = Math.max(1, Math.floor(lotMultiplier));
+  if (mult === 1) return legs;
+  return legs.map((l) => ({ ...l, lots: l.lots * mult }));
+}
+
 export const useStrategyStore = create<StrategyState>()(
   subscribeWithSelector((set, get) => ({
     strategyId: null,
@@ -59,6 +67,7 @@ export const useStrategyStore = create<StrategyState>()(
     legs: [],
     closedLegs: [],
     realizedPnl: 0,
+    lotMultiplier: 1,
     margin: null,
     isLoadingMargin: false,
     isExecuting: false,
@@ -70,6 +79,10 @@ export const useStrategyStore = create<StrategyState>()(
     },
 
     setStrategyName: (strategyName) => set({ strategyName }),
+    setLotMultiplier: (factor) => {
+      const safe = Math.max(1, Math.floor(Number.isFinite(factor) ? factor : 1));
+      set({ lotMultiplier: safe });
+    },
     setMargin: (margin) => set({ margin }),
     setIsLoadingMargin: (isLoadingMargin) => set({ isLoadingMargin }),
     setLastExecutionNotice: (lastExecutionNotice) => set({ lastExecutionNotice }),
@@ -92,7 +105,6 @@ export const useStrategyStore = create<StrategyState>()(
 
     addLeg: (leg) => {
       set((state) => {
-        // Merge if identical contract + side + expiry is already OPEN
         const existingIdx = state.legs.findIndex(
           (l) =>
             l.status === "OPEN" &&
@@ -115,7 +127,6 @@ export const useStrategyStore = create<StrategyState>()(
         }
         return { legs: [...state.legs, leg] };
       });
-      // Ensure multi-expiry activeLegQuotes caches this contract
       void useMarketStore.getState().refreshActiveLegQuotes([leg.contract_id]);
     },
 
@@ -169,7 +180,9 @@ export const useStrategyStore = create<StrategyState>()(
       const leg = state.legs.find((l) => l.leg_id === legId);
       if (!leg || lotsToExit < 1) return;
 
-      const clampedExitLots = Math.min(leg.lots, Math.floor(lotsToExit));
+      const mult = Math.max(1, state.lotMultiplier);
+      const effectiveOpenLots = leg.lots * mult;
+      const clampedExitLots = Math.min(effectiveOpenLots, Math.floor(lotsToExit));
       const market = useMarketStore.getState();
       const liveQuote = market.activeLegQuotes[leg.contract_id];
       const closingSide: OptionSide = leg.side === "BUY" ? "SELL" : "BUY";
@@ -179,7 +192,7 @@ export const useStrategyStore = create<StrategyState>()(
         const res = await executeOrders({
           strategy_id: state.strategyId,
           trading_mode: "SIMULATOR",
-          action: clampedExitLots === leg.lots ? "SQUARE_OFF_ALL" : "PARTIAL_EXIT",
+          action: clampedExitLots === effectiveOpenLots ? "SQUARE_OFF_ALL" : "PARTIAL_EXIT",
           slice_if_frozen: true,
           as_of: market.asOfIso || null,
           legs: [
@@ -220,14 +233,29 @@ export const useStrategyStore = create<StrategyState>()(
         };
 
         set((cur) => {
-          const nextLegs =
-            clampedExitLots >= leg.lots
-              ? cur.legs.filter((l) => l.leg_id !== legId)
-              : cur.legs.map((l) =>
-                  l.leg_id === legId ? { ...l, lots: l.lots - clampedExitLots } : l
-                );
+          const remainingEffective = effectiveOpenLots - clampedExitLots;
+          let nextMultiplier = cur.lotMultiplier;
+          let nextLegs: StrategyLeg[];
+
+          if (remainingEffective <= 0) {
+            nextLegs = cur.legs.filter((l) => l.leg_id !== legId);
+          } else if (remainingEffective % mult === 0) {
+            nextLegs = cur.legs.map((l) =>
+              l.leg_id === legId ? { ...l, lots: remainingEffective / mult } : l
+            );
+          } else {
+            // Normalize all open legs to base 1x when partial exit splits a multiplied block unevenly
+            nextMultiplier = 1;
+            nextLegs = cur.legs.map((l) =>
+              l.leg_id === legId
+                ? { ...l, lots: remainingEffective }
+                : { ...l, lots: l.lots * mult }
+            );
+          }
+
           return {
             legs: nextLegs,
+            lotMultiplier: nextMultiplier,
             closedLegs: [closedRecord, ...cur.closedLegs],
             realizedPnl: round2(cur.realizedPnl + delta),
             isExecuting: false,
@@ -245,6 +273,7 @@ export const useStrategyStore = create<StrategyState>()(
 
     squareOffAll: async () => {
       const state = get();
+      const mult = Math.max(1, state.lotMultiplier);
       const openLegs = state.legs.filter((l) => l.status === "OPEN" && l.enabled);
       if (openLegs.length === 0) return;
 
@@ -263,7 +292,7 @@ export const useStrategyStore = create<StrategyState>()(
               leg_id: leg.leg_id,
               contract_id: leg.contract_id,
               side: (leg.side === "BUY" ? "SELL" : "BUY") as OptionSide,
-              lots: leg.lots,
+              lots: leg.lots * mult,
               lot_size: leg.lot_size,
               limit_price: q ? String(q.ltp) : String(leg.entry_price),
               entry_price: String(leg.entry_price),
@@ -275,8 +304,11 @@ export const useStrategyStore = create<StrategyState>()(
         const nowIso = new Date().toISOString();
         const newClosed: ClosedLegRecord[] = openLegs.map((leg) => {
           const fill = res.fills.find((f) => f.contract_id === leg.contract_id);
-          const exitPx = Number(fill?.fill_price ?? market.activeLegQuotes[leg.contract_id]?.ltp ?? leg.entry_price);
-          const qty = leg.lots * leg.lot_size;
+          const exitPx = Number(
+            fill?.fill_price ?? market.activeLegQuotes[leg.contract_id]?.ltp ?? leg.entry_price
+          );
+          const effLots = leg.lots * mult;
+          const qty = effLots * leg.lot_size;
           const legPnl =
             leg.side === "BUY"
               ? (exitPx - leg.entry_price) * qty
@@ -289,7 +321,7 @@ export const useStrategyStore = create<StrategyState>()(
             strike: leg.strike ?? null,
             option_type: leg.option_type,
             side: leg.side,
-            lots_closed: leg.lots,
+            lots_closed: effLots,
             lot_size: leg.lot_size,
             entry_price: leg.entry_price,
             exit_price: exitPx,
@@ -300,6 +332,7 @@ export const useStrategyStore = create<StrategyState>()(
 
         set((cur) => ({
           legs: [],
+          lotMultiplier: 1,
           closedLegs: [...newClosed, ...cur.closedLegs],
           realizedPnl: round2(cur.realizedPnl + delta),
           isExecuting: false,
@@ -322,17 +355,22 @@ export const useStrategyStore = create<StrategyState>()(
         legs: [],
         closedLegs: [],
         realizedPnl: 0,
+        lotMultiplier: 1,
         margin: null,
         lastExecutionNotice: null,
       }),
 
     loadSavedStrategy: (saved) => {
+      const metaMult = Number(
+        (saved.metadata as Record<string, unknown> | undefined)?.lot_multiplier ?? 1
+      );
       set({
         strategyId: saved.id,
         strategyName: saved.name,
         legs: saved.legs ?? [],
         closedLegs: saved.closed_legs ?? [],
         realizedPnl: Number(saved.realized_pnl ?? 0),
+        lotMultiplier: Number.isFinite(metaMult) && metaMult >= 1 ? Math.floor(metaMult) : 1,
         lastExecutionNotice: `Loaded "${saved.name}"`,
       });
       const cids = (saved.legs ?? []).map((l) => l.contract_id);
@@ -342,4 +380,3 @@ export const useStrategyStore = create<StrategyState>()(
     },
   }))
 );
-

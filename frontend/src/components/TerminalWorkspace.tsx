@@ -5,7 +5,7 @@ import { evaluateAnalytics, getInstruments } from "@/lib/api/client";
 import { MarketStreamClient } from "@/lib/api/wsClient";
 import { useMarketStore } from "@/stores/marketStore";
 import { useSimulatorStore } from "@/stores/simulatorStore";
-import { useStrategyStore } from "@/stores/strategyStore";
+import { getEffectiveLegs, useStrategyStore } from "@/stores/strategyStore";
 import { useUiStore } from "@/stores/uiStore";
 import { StrategyBuilderPanel } from "./builder/StrategyBuilderPanel";
 import { OrdersDrawer } from "./modals/OrdersDrawer";
@@ -27,6 +27,7 @@ export function TerminalWorkspace() {
   const error = useMarketStore((s) => s.error);
 
   const legs = useStrategyStore((s) => s.legs);
+  const lotMultiplier = useStrategyStore((s) => s.lotMultiplier);
   const realizedPnl = useStrategyStore((s) => s.realizedPnl);
   const setMargin = useStrategyStore((s) => s.setMargin);
   const setIsLoadingMargin = useStrategyStore((s) => s.setIsLoadingMargin);
@@ -38,9 +39,16 @@ export function TerminalWorkspace() {
   const stepTime = useSimulatorStore((s) => s.stepTime);
 
   const includeCharges = useUiStore((s) => s.includeCharges);
+  const hydrateThemeFromStorage = useUiStore((s) => s.hydrateThemeFromStorage);
 
-  // Initial load: instruments + default NIFTY option chain
+  // Hydrate persisted light/dark theme + initial market data
   useEffect(() => {
+    hydrateThemeFromStorage();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "stockmock-theme") hydrateThemeFromStorage();
+    };
+    window.addEventListener("storage", onStorage);
+
     let mounted = true;
     const market = useMarketStore.getState();
     const strategy = useStrategyStore.getState();
@@ -62,8 +70,9 @@ export function TerminalWorkspace() {
 
     return () => {
       mounted = false;
+      window.removeEventListener("storage", onStorage);
     };
-  }, []);
+  }, [hydrateThemeFromStorage]);
 
   // Unified coalesced WebSocket lifecycle (Builder live/mock stream)
   useEffect(() => {
@@ -96,9 +105,12 @@ export function TerminalWorkspace() {
     wsRef.current.subscribe(symbol, selectedChainExpiry, activeContracts);
   }, [symbol, selectedChainExpiry, legs, mode]);
 
-  // Debounced backend margin estimation (/api/v1/analytics/evaluate)
+  // Debounced backend margin estimation (/api/v1/analytics/evaluate) with lotMultiplier
   useEffect(() => {
-    const activeLegs = legs.filter((l) => l.enabled && l.status === "OPEN");
+    const activeLegs = getEffectiveLegs(
+      legs.filter((l) => l.enabled && l.status === "OPEN"),
+      lotMultiplier
+    );
     if (activeLegs.length === 0) {
       setMargin(null);
       return;
@@ -121,7 +133,18 @@ export function TerminalWorkspace() {
     }, 180);
 
     return () => clearTimeout(timer);
-  }, [legs, symbol, spot, asOfIso, realizedPnl, includeCharges, indiaVix, setMargin, setIsLoadingMargin]);
+  }, [
+    legs,
+    lotMultiplier,
+    symbol,
+    spot,
+    asOfIso,
+    realizedPnl,
+    includeCharges,
+    indiaVix,
+    setMargin,
+    setIsLoadingMargin,
+  ]);
 
   // Simulator AutoPlay loop
   useEffect(() => {
@@ -134,13 +157,13 @@ export function TerminalWorkspace() {
   }, [mode, isPlaying, playbackSpeed, autoStepSize, stepTime]);
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-slate-100">
+    <div className="min-h-screen bg-[#f4f6f9] text-slate-900 dark:bg-[#0b0f17] dark:text-slate-100">
       <TopBar />
       <SimulatorBar />
 
       {error && (
         <div className="mx-auto mt-3 max-w-[1680px] px-4">
-          <div className="rounded-lg border border-rose-500/40 bg-rose-950/30 px-3 py-2 text-xs text-rose-200">
+          <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-rose-500/40 dark:bg-rose-950/30 dark:text-rose-200">
             Backend connection note: {error} (ensure FastAPI is running on port 8000)
           </div>
         </div>
@@ -152,7 +175,7 @@ export function TerminalWorkspace() {
           <OptionChainTable />
         </div>
 
-        {/* Right: Strategy Builder + ECharts Payoff & What-If */}
+        {/* Right: Strategy Builder + ECharts Payoff / Table / Greeks */}
         <div className="flex flex-col gap-4 xl:col-span-7">
           <StrategyBuilderPanel />
           <PayoffPanel />
@@ -165,4 +188,3 @@ export function TerminalWorkspace() {
     </div>
   );
 }
-

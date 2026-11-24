@@ -12,11 +12,13 @@ export function PartialExitDialog() {
   const openPartialExitModal = useUiStore((s) => s.openPartialExitModal);
 
   const legs = useStrategyStore((s) => s.legs);
+  const lotMultiplier = useStrategyStore((s) => s.lotMultiplier);
   const partialExitLeg = useStrategyStore((s) => s.partialExitLeg);
   const isExecuting = useStrategyStore((s) => s.isExecuting);
   const activeLegQuotes = useMarketStore((s) => s.activeLegQuotes);
 
   const leg = legs.find((l) => l.leg_id === partialExitLegId) ?? null;
+  const effectiveOpenLots = leg ? leg.lots * Math.max(1, lotMultiplier) : 0;
 
   const [lotsToExit, setLotsToExit] = useState(1);
   const [exitPrice, setExitPrice] = useState("0");
@@ -27,7 +29,8 @@ export function PartialExitDialog() {
 
     if (leg) {
       const liveLtp = activeLegQuotes[leg.contract_id]?.ltp ?? leg.entry_price;
-      setLotsToExit(Math.max(1, Math.floor(leg.lots / 2) || 1));
+      const effLots = leg.lots * Math.max(1, lotMultiplier);
+      setLotsToExit(Math.max(1, Math.floor(effLots / 2) || 1));
       setExitPrice(liveLtp.toFixed(2));
       if (!dialog.open) {
         dialog.showModal();
@@ -35,9 +38,8 @@ export function PartialExitDialog() {
     } else if (dialog.open) {
       dialog.close();
     }
-  }, [leg, activeLegQuotes]);
+  }, [leg, lotMultiplier, activeLegQuotes]);
 
-  // Light-dismiss fallback for browsers without HTMLDialogElement.closedBy
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog || "closedBy" in HTMLDialogElement.prototype) return;
@@ -98,45 +100,45 @@ export function PartialExitDialog() {
         if (dialogRef.current) dialogRef.current.returnValue = "";
         openPartialExitModal(null);
       }}
-      className="m-auto w-full max-w-md rounded-xl border border-slate-700 bg-[#111827] p-5 text-slate-100 shadow-2xl"
+      className="m-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#111827] dark:text-slate-100"
     >
       {leg && (
         <div className="space-y-4">
           <div className="flex items-start justify-between">
             <div>
-              <h1 id="partial-exit-title" className="text-base font-semibold text-white">
+              <h1 id="partial-exit-title" className="text-base font-semibold text-slate-900 dark:text-white">
                 Partial / Full Leg Exit
               </h1>
-              <p className="mt-0.5 text-xs text-slate-400 font-mono">
+              <p className="mt-0.5 font-mono text-xs text-slate-500 dark:text-slate-400">
                 {leg.side} {leg.strike ?? "FUT"} {leg.option_type} ({leg.expiry}) ·{" "}
-                {leg.lots} lot(s) open
+                {effectiveOpenLots} lot(s) open
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <label htmlFor="exit-lots-input" className="block text-slate-400">
-                Lots to Exit (max {leg.lots})
+              <label htmlFor="exit-lots-input" className="block text-slate-600 dark:text-slate-400">
+                Lots to Exit (max {effectiveOpenLots})
               </label>
               <input
                 id="exit-lots-input"
                 type="number"
                 autoFocus
                 min={1}
-                max={leg.lots}
+                max={effectiveOpenLots}
                 value={lotsToExit}
                 onChange={(e) =>
                   setLotsToExit(
-                    Math.max(1, Math.min(leg.lots, Number(e.target.value) || 1))
+                    Math.max(1, Math.min(effectiveOpenLots, Number(e.target.value) || 1))
                   )
                 }
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-2.5 py-1.5 font-mono text-sm text-white focus:border-blue-500 focus:outline-none"
+                className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
             </div>
 
             <div>
-              <label htmlFor="exit-price-input" className="block text-slate-400">
+              <label htmlFor="exit-price-input" className="block text-slate-600 dark:text-slate-400">
                 Exit Price (₹)
               </label>
               <input
@@ -146,18 +148,20 @@ export function PartialExitDialog() {
                 min="0.05"
                 value={exitPrice}
                 onChange={(e) => setExitPrice(e.target.value)}
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-2.5 py-1.5 font-mono text-sm text-white focus:border-blue-500 focus:outline-none"
+                className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/80 px-3 py-2 text-xs tabular-nums">
-            <span className="text-slate-400">
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs tabular-nums dark:border-slate-800 dark:bg-slate-900/80">
+            <span className="text-slate-600 dark:text-slate-400">
               Projected Booked P&amp;L ({lotsToExit * leg.lot_size} qty):
             </span>
             <span
               className={`font-mono font-bold ${
-                estPnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                estPnl >= 0
+                  ? "text-[#16A34A] dark:text-emerald-400"
+                  : "text-[#DC2626] dark:text-rose-400"
               }`}
             >
               {formatSignedInr(estPnl, 2)}
@@ -168,7 +172,7 @@ export function PartialExitDialog() {
             <button
               type="button"
               onClick={handleClose}
-              className="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Cancel
             </button>
@@ -186,4 +190,3 @@ export function PartialExitDialog() {
     </dialog>
   );
 }
-

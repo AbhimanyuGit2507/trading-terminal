@@ -3,20 +3,47 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light dark;
+
+  --bg-canvas: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-muted: #64748b;
+  --accent-primary: #2563eb;
+  --scrollbar-track: #e2e8f0;
+  --scrollbar-thumb: #94a3b8;
+  --slider-track-color: #cbd5e1;
+  --slider-fill-color: #2563eb;
+  --slider-thumb-color: #2563eb;
+
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  accent-color: var(--accent-primary);
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+  color-scheme: light;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="dark"]) {
   color-scheme: dark;
+}
+
+:root.dark,
+[data-theme="dark"] {
   --bg-canvas: #0b0f17;
   --bg-surface: #111827;
-  --bg-elevated: #172033;
+  --bg-elevated: #0e1523;
   --border-subtle: #1f2a3d;
   --text-primary: #f1f5f9;
   --text-muted: #94a3b8;
   --accent-primary: #3b82f6;
-  --profit-color: #10b981;
-  --loss-color: #ef4444;
   --scrollbar-track: #0f1623;
   --scrollbar-thumb: #334155;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  accent-color: var(--accent-primary);
+  --slider-track-color: #243247;
+  --slider-fill-color: #3b82f6;
+  --slider-thumb-color: #60a5fa;
 }
 
 html,
@@ -36,10 +63,15 @@ dialog:modal {
 }
 
 dialog::backdrop {
-  background: rgba(2, 6, 23, 0.72);
+  background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(2px);
   overflow: hidden;
   overscroll-behavior: contain;
+}
+
+:root.dark dialog::backdrop,
+[data-theme="dark"] dialog::backdrop {
+  background: rgba(2, 6, 23, 0.72);
 }
 
 /* Cross-browser styled range slider (What-If controls) */
@@ -48,9 +80,6 @@ input[type="range"].whatif-slider {
   --slider-thumb-size: 1rem;
   --slider-track-radius: 999px;
   --slider-thumb-radius: 50%;
-  --slider-track-color: #243247;
-  --slider-fill-color: #3b82f6;
-  --slider-thumb-color: #60a5fa;
   --slider-direction: to right;
 
   --attr-min: 0;
@@ -88,10 +117,10 @@ input[type="range"].whatif-slider::-webkit-slider-thumb {
   inline-size: var(--slider-thumb-size);
   block-size: var(--slider-thumb-size);
   margin-block-start: calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2);
-  border: 2px solid #0b0f17;
+  border: 2px solid var(--bg-surface);
   border-radius: var(--slider-thumb-radius);
   background: var(--slider-thumb-color);
-  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
 }
 
 input[type="range"].whatif-slider::-moz-range-track {
@@ -110,13 +139,13 @@ input[type="range"].whatif-slider::-moz-range-progress {
 input[type="range"].whatif-slider::-moz-range-thumb {
   inline-size: var(--slider-thumb-size);
   block-size: var(--slider-thumb-size);
-  border: 2px solid #0b0f17;
+  border: 2px solid var(--bg-surface);
   border-radius: var(--slider-thumb-radius);
   background: var(--slider-thumb-color);
 }
 
 input[type="range"].whatif-slider:focus-visible {
-  outline: 2px solid #60a5fa;
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -137,4 +166,3 @@ input[type="range"].whatif-slider:focus-visible {
     background: var(--scrollbar-track);
   }
 }
-

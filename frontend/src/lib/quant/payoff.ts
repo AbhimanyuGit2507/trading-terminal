@@ -460,3 +460,258 @@ export function splitSeriesForECharts(points: PayoffCurvePoint[]): EChartsSplitS
   return { positiveExpiry, negativeExpiry, targetCurve };
 }
 
+export interface PayoffTableRow {
+  spot: number;
+  pctChange: number;
+  targetPnl: number;
+  expiryPnl: number;
+  targetDelta: number;
+  isCurrentSpot: boolean;
+  isBreakeven: boolean;
+}
+
+export function buildPayoffTableRows(
+  input: EvaluatePayoffInput & { breakevens?: number[] }
+): PayoffTableRow[] {
+  const {
+    spot,
+    legs,
+    baseDtIso,
+    targetDtIso = baseDtIso,
+    ivShiftPct = 0.0,
+    realizedPnl = 0.0,
+    includeCharges = false,
+    r = 0.0,
+    breakevens = [],
+  } = input;
+
+  const activeLegs = legs.filter((l) => l.enabled && l.status === "OPEN");
+  let charges = 0.0;
+  if (includeCharges) {
+    for (const leg of activeLegs) {
+      charges += estimateLegCharges(
+        leg.entry_price,
+        leg.lots * leg.lot_size,
+        leg.side,
+        leg.option_type,
+        leg.exchange ?? "NSE_FNO"
+      );
+    }
+    charges = round2(charges);
+  }
+  const netOffset = realizedPnl - charges;
+
+  const nearestExpiry = activeLegs.reduce<string | null>(
+    (minExp, l) => (minExp === null || l.expiry < minExp ? l.expiry : minExp),
+    null
+  );
+  const nearestExpIso = nearestExpiry ? `${nearestExpiry}T15:30:00+05:30` : baseDtIso;
+
+  type Candidate = { spot: number; isCurrentSpot: boolean; isBreakeven: boolean };
+  const candidates: Candidate[] = [];
+  for (let i = -10; i <= 10; i++) {
+    const pct = i * 0.5;
+    candidates.push({
+      spot: round2(spot * (1 + pct / 100.0)),
+      isCurrentSpot: i === 0,
+      isBreakeven: false,
+    });
+  }
+  for (const be of breakevens) {
+    candidates.push({ spot: round2(be), isCurrentSpot: false, isBreakeven: true });
+  }
+
+  candidates.sort((a, b) => a.spot - b.spot);
+  const deduped: Candidate[] = [];
+  for (const c of candidates) {
+    const prev = deduped[deduped.length - 1];
+    if (prev && Math.abs(prev.spot - c.spot) < 0.05) {
+      prev.isCurrentSpot = prev.isCurrentSpot || c.isCurrentSpot;
+      prev.isBreakeven = prev.isBreakeven || c.isBreakeven;
+    } else {
+      deduped.push({ ...c });
+    }
+  }
+
+  const grid = Float64Array.from(deduped.map((c) => c.spot));
+  const expiryVals =
+    activeLegs.length > 0
+      ? evaluateLegsAtDatetime(grid, activeLegs, spot, baseDtIso, nearestExpIso, ivShiftPct, r)
+      : new Float64Array(grid.length);
+  const targetVals =
+    activeLegs.length > 0
+      ? evaluateLegsAtDatetime(grid, activeLegs, spot, baseDtIso, targetDtIso, ivShiftPct, r)
+      : new Float64Array(grid.length);
+
+  const ivDelta = ivShiftPct / 100.0;
+
+  return deduped.map((c, idx) => {
+    let targetDelta = 0.0;
+    for (const leg of activeLegs) {
+      const signedQty = leg.lots * leg.lot_size * (leg.side === "BUY" ? 1 : -1);
+      if (leg.option_type === "FUT") {
+        targetDelta += signedQty;
+      } else {
+        const tBase = timeToExpiryYears(baseDtIso, leg.expiry);
+        const tEval = timeToExpiryYears(targetDtIso, leg.expiry);
+        const baseFwd = leg.forward_at_base ?? spot;
+        const basis = baseFwd - spot;
+        const basisScale = tBase > 1e-9 ? tEval / tBase : 0.0;
+        const fwd = Math.max(c.spot + basis * basisScale, 0.01);
+        const g = greeksBlack76Scalar(
+          fwd,
+          leg.strike ?? c.spot,
+          tEval,
+          Math.max(leg.entry_iv + ivDelta, 0.005),
+          leg.option_type,
+          r
+        );
+        targetDelta += signedQty * g.delta;
+      }
+    }
+
+    return {
+      spot: c.spot,
+      pctChange: spot > 0 ? round2(((c.spot - spot) / spot) * 100.0) : 0,
+      targetPnl: round2(targetVals[idx] + netOffset),
+      expiryPnl: round2(expiryVals[idx] + netOffset),
+      targetDelta: round2(targetDelta),
+      isCurrentSpot: c.isCurrentSpot,
+      isBreakeven: c.isBreakeven,
+    };
+  });
+}
+
+export interface LegGreeksRow {
+  legId: string;
+  label: string;
+  expiry: string;
+  side: "BUY" | "SELL";
+  effectiveLots: number;
+  effectiveQty: number;
+  ivPct: number;
+  unitDelta: number;
+  unitTheta: number;
+  unitGamma: number;
+  unitVega: number;
+  posDelta: number;
+  posTheta: number;
+  posGamma: number;
+  posVega: number;
+}
+
+export interface LegGreeksBreakdown {
+  rows: LegGreeksRow[];
+  totals: {
+    delta: number;
+    theta: number;
+    gamma: number;
+    vega: number;
+  };
+}
+
+export function computeLegGreeksBreakdown(input: {
+  spot: number;
+  targetSpot: number;
+  legs: QuantLeg[];
+  baseDtIso: string;
+  targetDtIso: string;
+  ivShiftPct: number;
+  lotMultiplier?: number;
+  r?: number;
+}): LegGreeksBreakdown {
+  const {
+    spot,
+    targetSpot,
+    legs,
+    baseDtIso,
+    targetDtIso,
+    ivShiftPct,
+    lotMultiplier = 1,
+    r = 0.0,
+  } = input;
+
+  const mult = Math.max(1, Math.floor(lotMultiplier));
+  const ivDelta = ivShiftPct / 100.0;
+  const rows: LegGreeksRow[] = [];
+  let totDelta = 0;
+  let totTheta = 0;
+  let totGamma = 0;
+  let totVega = 0;
+
+  for (const leg of legs) {
+    if (!leg.enabled || leg.status !== "OPEN") continue;
+    const effectiveLots = leg.lots * mult;
+    const effectiveQty = effectiveLots * leg.lot_size;
+    const signedQty = effectiveQty * (leg.side === "BUY" ? 1 : -1);
+
+    const tBase = timeToExpiryYears(baseDtIso, leg.expiry);
+    const tEval = timeToExpiryYears(targetDtIso, leg.expiry);
+    const baseFwd = leg.forward_at_base ?? spot;
+    const basis = baseFwd - spot;
+    const basisScale = tBase > 1e-9 ? tEval / tBase : 0.0;
+    const fwd = Math.max(targetSpot + basis * basisScale, 0.01);
+
+    let unitDelta = 1.0;
+    let unitTheta = 0.0;
+    let unitGamma = 0.0;
+    let unitVega = 0.0;
+    let ivPct = 0.0;
+
+    if (leg.option_type !== "FUT") {
+      const sigma = Math.max(leg.entry_iv + ivDelta, 0.005);
+      ivPct = round2(sigma * 100.0);
+      const g = greeksBlack76Scalar(
+        fwd,
+        leg.strike ?? targetSpot,
+        tEval,
+        sigma,
+        leg.option_type,
+        r
+      );
+      unitDelta = g.delta;
+      unitTheta = g.theta;
+      unitGamma = g.gamma;
+      unitVega = g.vega;
+    }
+
+    const posDelta = signedQty * unitDelta;
+    const posTheta = signedQty * unitTheta;
+    const posGamma = signedQty * unitGamma;
+    const posVega = signedQty * unitVega;
+
+    totDelta += posDelta;
+    totTheta += posTheta;
+    totGamma += posGamma;
+    totVega += posVega;
+
+    rows.push({
+      legId: leg.leg_id,
+      label: leg.option_type === "FUT" ? `${leg.symbol} FUT` : `${leg.strike} ${leg.option_type}`,
+      expiry: leg.expiry,
+      side: leg.side,
+      effectiveLots,
+      effectiveQty,
+      ivPct,
+      unitDelta: round4(unitDelta),
+      unitTheta: round2(unitTheta),
+      unitGamma: round4(unitGamma),
+      unitVega: round2(unitVega),
+      posDelta: round2(posDelta),
+      posTheta: round2(posTheta),
+      posGamma: round4(posGamma),
+      posVega: round2(posVega),
+    });
+  }
+
+  return {
+    rows,
+    totals: {
+      delta: round2(totDelta),
+      theta: round2(totTheta),
+      gamma: round4(totGamma),
+      vega: round2(totVega),
+    },
+  };
+}
+

@@ -115,64 +115,66 @@ export function OptionChainTable() {
   };
 
   return (
-    <section className="flex flex-col rounded-xl border border-slate-800 bg-[#111827] shadow-lg overflow-hidden">
+    <section className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#111827] dark:shadow-lg">
       {/* Option Chain Header Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-[#0e1523] px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-[#0e1523]">
         <div className="flex items-center gap-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-200">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-800 dark:text-slate-200">
             Option Chain
           </h2>
           {isLoadingChain && (
-            <span className="text-[11px] text-blue-400 animate-pulse">Loading…</span>
+            <span className="animate-pulse text-[11px] text-blue-600 dark:text-blue-400">
+              Loading…
+            </span>
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Quick Futures B/S */}
-          <div className="flex items-center gap-1 rounded border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-[11px]">
-            <span className="text-slate-400">FUT</span>
+          <div className="flex items-center gap-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-[11px] dark:border-slate-700/80 dark:bg-slate-900">
+            <span className="text-slate-500 dark:text-slate-400">FUT</span>
             <button
               type="button"
               onClick={() => handleAddFuture("BUY")}
-              className="rounded bg-emerald-600/25 px-1.5 py-0.5 text-[10px] font-bold text-emerald-300 hover:bg-emerald-600 hover:text-white"
+              className="rounded bg-[#DCFCE7] px-1.5 py-0.5 text-[10px] font-bold text-[#15803D] hover:bg-[#16A34A] hover:text-white dark:bg-emerald-600/25 dark:text-emerald-300 dark:hover:bg-emerald-600"
             >
               B
             </button>
             <button
               type="button"
               onClick={() => handleAddFuture("SELL")}
-              className="rounded bg-rose-600/25 px-1.5 py-0.5 text-[10px] font-bold text-rose-300 hover:bg-rose-600 hover:text-white"
+              className="rounded bg-[#FEE2E2] px-1.5 py-0.5 text-[10px] font-bold text-[#B91C1C] hover:bg-[#DC2626] hover:text-white dark:bg-rose-600/25 dark:text-rose-300 dark:hover:bg-rose-600"
             >
               S
             </button>
           </div>
 
           {/* Default Lots Stepper */}
-          <div className="flex items-center gap-1 rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-[11px]">
-            <span className="text-slate-400">Lots</span>
+          <div className="flex items-center gap-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-[11px] dark:border-slate-700 dark:bg-slate-900">
+            <span className="text-slate-500 dark:text-slate-400">Lots</span>
             <button
               type="button"
               aria-label="Decrease default lots"
               onClick={() => setDefaultLots(defaultLots - 1)}
-              className="rounded p-0.5 text-slate-300 hover:bg-slate-800"
+              className="rounded p-0.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <Minus className="h-3 w-3" />
             </button>
-            <span className="min-w-[18px] text-center font-mono font-semibold text-white">
+            <span className="min-w-[18px] text-center font-mono font-semibold text-slate-900 dark:text-white">
               {defaultLots}
             </span>
             <button
               type="button"
               aria-label="Increase default lots"
               onClick={() => setDefaultLots(defaultLots + 1)}
-              className="rounded p-0.5 text-slate-300 hover:bg-slate-800"
+              className="rounded p-0.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <Plus className="h-3 w-3" />
             </button>
           </div>
 
           {/* Strike Window Filter */}
-          <div className="flex items-center rounded border border-slate-700 bg-slate-900 p-0.5 text-[11px]">
+          <div className="flex items-center rounded border border-slate-300 bg-white p-0.5 text-[11px] dark:border-slate-700 dark:bg-slate-900">
             {([15, 25, 999] as StrikeWindow[]).map((win) => (
               <button
                 key={win}
@@ -181,7 +183,7 @@ export function OptionChainTable() {
                 className={`rounded px-1.5 py-0.5 font-medium ${
                   strikeWindow === win
                     ? "bg-blue-600 text-white"
-                    : "text-slate-400 hover:text-slate-200"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                 }`}
               >
                 {win >= 999 ? "All" : `±${win}`}
@@ -193,7 +195,7 @@ export function OptionChainTable() {
             type="button"
             onClick={scrollToAtm}
             title="Center on ATM strike"
-            className="inline-flex items-center gap-1 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] text-amber-300 hover:bg-slate-800"
+            className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-50 dark:border-slate-700 dark:bg-slate-900 dark:text-amber-300 dark:hover:bg-slate-800"
           >
             <Crosshair className="h-3 w-3" />
             <span>ATM</span>
@@ -207,39 +209,45 @@ export function OptionChainTable() {
         tabIndex={0}
         role="region"
         aria-label="Indian F&O Option Chain Table"
-        className="terminal-scroll max-h-[560px] overflow-auto focus:outline-none"
+        className="terminal-scroll max-h-[600px] overflow-auto focus:outline-none"
       >
         <table className="w-full border-separate border-spacing-0 text-xs">
-          <thead className="sticky top-0 z-20 bg-[#0d1422] text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <thead className="sticky top-0 z-20 bg-slate-100 text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:bg-[#0d1422] dark:text-slate-400">
             <tr>
-              <th scope="col" className="border-b border-slate-800 px-2 py-2 text-right">
+              <th scope="col" className="border-b border-slate-200 px-2 py-2 text-right dark:border-slate-800">
                 OI
               </th>
-              <th scope="col" className="border-b border-slate-800 px-1.5 py-2 text-right">
+              <th scope="col" className="border-b border-slate-200 px-1.5 py-2 text-right dark:border-slate-800">
                 IV
               </th>
-              <th scope="col" className="border-b border-slate-800 px-1.5 py-2 text-right">
+              <th scope="col" className="border-b border-slate-200 px-1.5 py-2 text-right dark:border-slate-800">
                 Δ
               </th>
-              <th scope="col" className="border-b border-slate-800 px-2 py-2 text-right text-emerald-400">
+              <th
+                scope="col"
+                className="border-b border-slate-200 px-2 py-2 text-right text-emerald-700 dark:border-slate-800 dark:text-emerald-400"
+              >
                 Call LTP
               </th>
               <th
                 scope="col"
-                className="border-b border-x border-slate-800 bg-[#0a101b] px-2.5 py-2 text-center text-slate-200"
+                className="border-x border-b border-slate-200 bg-slate-200/70 px-2.5 py-2 text-center text-slate-900 dark:border-slate-800 dark:bg-[#0a101b] dark:text-slate-200"
               >
                 Strike
               </th>
-              <th scope="col" className="border-b border-slate-800 px-2 py-2 text-left text-rose-400">
+              <th
+                scope="col"
+                className="border-b border-slate-200 px-2 py-2 text-left text-rose-700 dark:border-slate-800 dark:text-rose-400"
+              >
                 Put LTP
               </th>
-              <th scope="col" className="border-b border-slate-800 px-1.5 py-2 text-left">
+              <th scope="col" className="border-b border-slate-200 px-1.5 py-2 text-left dark:border-slate-800">
                 Δ
               </th>
-              <th scope="col" className="border-b border-slate-800 px-1.5 py-2 text-left">
+              <th scope="col" className="border-b border-slate-200 px-1.5 py-2 text-left dark:border-slate-800">
                 IV
               </th>
-              <th scope="col" className="border-b border-slate-800 px-2 py-2 text-left">
+              <th scope="col" className="border-b border-slate-200 px-2 py-2 text-left dark:border-slate-800">
                 OI
               </th>
             </tr>
@@ -263,4 +271,3 @@ export function OptionChainTable() {
     </section>
   );
 }
-
